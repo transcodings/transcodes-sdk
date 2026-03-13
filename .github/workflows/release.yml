@@ -19,9 +19,9 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GIT_CHANGESET_TOKEN }}
       - name: setup node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
       - name: install dependencies
         run: npm ci
       - name: Create release pull request

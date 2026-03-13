@@ -1,9 +1,0 @@
-# greeting_package
-
-npx changeset init
-
-npx changeset
-
-npx changeset pre enter alpha
-
-npx changeset pre exit
