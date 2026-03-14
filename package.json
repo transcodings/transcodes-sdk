@@ -4,6 +4,7 @@
   "description": "This package is for transcodes frontend sdk",
   "type": "module",
   "main": "lib/index.cjs",
+  "types": "lib/types/index.d.ts",
   "exports": {
     "import": {
       "default": "./lib/index.esm.js",

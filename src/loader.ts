@@ -1,6 +1,4 @@
 import type {
-  TranscodesDynamicAPI,
-  TranscodesInitOptions,
   TranscodesEventName,
   EventCallback,
   ApiResponse,
@@ -8,35 +6,32 @@ import type {
   IdpOpenParams,
   IdpAuthResponse,
   User,
+  TranscodesAPI,
 } from './types';
 import { CDN_BASE } from './constants';
 
-function client(): Window['transcodes'] {
-  if (typeof window === 'undefined' || !window.transcodes) {
-    throw new Error('[transcodes-sdk] SDK not initialized. Call init() first.');
-  }
-  return window.transcodes;
-}
+let sdkReady: Promise<TranscodesAPI> | null = null;
 
 function waitForTranscodes(
-  projectId: string,
+  projectKey: string,
   timeoutMs = 10_000
-): Promise<void> {
+): Promise<TranscodesAPI> {
   return new Promise((resolve, reject) => {
     if (window.transcodes) {
-      resolve();
+      resolve(window.transcodes);
       return;
     }
+
     const start = Date.now();
     const interval = setInterval(() => {
       if (window.transcodes) {
         clearInterval(interval);
-        resolve();
+        resolve(window.transcodes);
       } else if (Date.now() - start > timeoutMs) {
         clearInterval(interval);
         reject(
           new Error(
-            `[transcodes-sdk] Timed out waiting for window.transcodes (Project: ${projectId})`
+            `[transcodes-sdk] Timed out waiting for SDK (Project: ${projectKey})`
           )
         );
       }
@@ -44,11 +39,10 @@ function waitForTranscodes(
   });
 }
 
-function loadScript(projectKey: string): Promise<void> {
+function loadScript(projectKey: string): Promise<TranscodesAPI> {
   return new Promise((resolve, reject) => {
     const scriptSrc = `${CDN_BASE}/${projectKey}/webworker.js`;
 
-    // 이미 스크립트가 주입된 경우: window.transcodes 준비 여부만 확인
     if (document.querySelector(`script[src="${scriptSrc}"]`)) {
       waitForTranscodes(projectKey).then(resolve).catch(reject);
       return;
@@ -57,89 +51,95 @@ function loadScript(projectKey: string): Promise<void> {
     const script = document.createElement('script');
     script.type = 'module';
     script.src = scriptSrc;
-    // onload는 파일 실행 완료를 보장하지만, webworker.js 내부의 비동기 초기화까지는
-    // 보장하지 않으므로 window.transcodes 가 실제로 세팅될 때까지 폴링
+    script.async = true;
+
     script.onload = () =>
       waitForTranscodes(projectKey).then(resolve).catch(reject);
     script.onerror = () =>
-      reject(new Error(`[transcodes-sdk] Failed to load: ${scriptSrc}`));
+      reject(new Error(`[transcodes-sdk] Failed to load script: ${scriptSrc}`));
+
     document.head.appendChild(script);
   });
 }
 
+async function client(): Promise<TranscodesAPI> {
+  console.log('api version - 1111234');
+  if (!sdkReady) {
+    throw new Error('[transcodes-sdk] SDK not initialized. Call init() first.');
+  }
+  return sdkReady;
+}
+
 // ─── Init ────────────────────────────────────────────────────────────────────
 
-export async function init(
-  projectId: string,
-  options?: Omit<TranscodesInitOptions, 'projectId'>
-): Promise<void> {
-  // 서버 사이드 실행 방지 (SSR Safe-guard)
+export function init(projectId: string): Promise<TranscodesAPI> {
   if (typeof window === 'undefined' || typeof document === 'undefined') {
-    console.warn(
-      '[transcodes-sdk] init() was called in a non-browser environment. Skipping initialization.'
+    return Promise.reject(
+      new Error(
+        '[transcodes-sdk] init() was called in a non-browser environment.'
+      )
     );
-    return;
   }
 
-  await loadScript(projectId);
-  const sdk = window.transcodes;
-  if ('init' in sdk) {
-    await (sdk as TranscodesDynamicAPI).init({
-      projectId: projectId,
-      ...options,
-    });
+  if (!sdkReady) {
+    sdkReady = loadScript(projectId);
   }
+
+  return sdkReady;
 }
 
 // ─── Token API ───────────────────────────────────────────────────────────────
 
-export const getAccessToken = (): Promise<string | null> =>
-  client().token.getAccessToken();
+export const getAccessToken = async (): Promise<string | null> =>
+  (await client()).token.getAccessToken();
 
-export const getCurrentUser = (): Promise<User | null> =>
-  client().token.getCurrentUser();
+export const getCurrentUser = async (): Promise<User | null> =>
+  (await client()).token.getCurrentUser();
 
-export const hasToken = (): boolean => client().token.hasToken();
+export const hasToken = async (): Promise<boolean> =>
+  (await client()).token.hasToken();
 
-export const isAuthenticated = (): Promise<boolean> =>
-  client().token.isAuthenticated();
+export const isAuthenticated = async (): Promise<boolean> =>
+  (await client()).token.isAuthenticated();
 
-export const signOut = (options?: {
+export const signOut = async (options?: {
   webhookNotification?: boolean;
-}): Promise<void> => client().token.signOut(options);
+}): Promise<void> => (await client()).token.signOut(options);
 
 // ─── User API ────────────────────────────────────────────────────────────────
 
-export const getUser = (params: {
+export const getUser = async (params: {
   projectId?: string;
   userId?: string;
   email?: string;
   fields?: string;
-}): Promise<ApiResponse<User[]>> => client().user.get(params);
+}): Promise<ApiResponse<User[]>> => (await client()).user.get(params);
 
 // ─── Modal API ───────────────────────────────────────────────────────────────
 
-export const openAuthLoginModal = (params: {
+export const openAuthLoginModal = async (params: {
   projectId?: string;
   webhookNotification?: boolean;
-}): Promise<ApiResponse<AuthResult[]>> => client().openAuthLoginModal(params);
+}): Promise<ApiResponse<AuthResult[]>> =>
+  (await client()).openAuthLoginModal(params);
 
-export const openAuthConsoleModal = (params?: {
+export const openAuthConsoleModal = async (params?: {
   projectId?: string;
-}): Promise<ApiResponse<null>> => client().openAuthConsoleModal(params);
+}): Promise<ApiResponse<null>> => (await client()).openAuthConsoleModal(params);
 
-export const openAuthAdminModal = (params: {
+export const openAuthAdminModal = async (params: {
   projectId?: string;
   allowedRoles: string[];
-}): Promise<ApiResponse<null>> => client().openAuthAdminModal(params);
+}): Promise<ApiResponse<null>> => (await client()).openAuthAdminModal(params);
 
-export const openAuthIdpModal = (
+export const openAuthIdpModal = async (
   params: IdpOpenParams & { projectId?: string }
-): Promise<ApiResponse<IdpAuthResponse[]>> => client().openAuthIdpModal(params);
+): Promise<ApiResponse<IdpAuthResponse[]>> =>
+  (await client()).openAuthIdpModal(params);
 
 // ─── Audit API ───────────────────────────────────────────────────────────────
 
-export const trackUserAction = (
+export const trackUserAction = async (
   event: {
     tag: string;
     severity?: 'low' | 'medium' | 'high';
@@ -152,20 +152,21 @@ export const trackUserAction = (
     requireAuth?: boolean;
     webhookNotification?: boolean;
   }
-): Promise<void> => client().trackUserAction(event, options);
+): Promise<void> => (await client()).trackUserAction(event, options);
 
 // ─── PWA ─────────────────────────────────────────────────────────────────────
 
-export const isPwaInstalled = (): boolean => client().isPwaInstalled();
+export const isPwaInstalled = async (): Promise<boolean> =>
+  (await client()).isPwaInstalled();
 
 // ─── Event API ───────────────────────────────────────────────────────────────
 
-export const on = <T extends TranscodesEventName>(
+export const on = async <T extends TranscodesEventName>(
   event: T,
   callback: EventCallback<T>
-): (() => void) => client().on(event, callback);
+): Promise<() => void> => (await client()).on(event, callback);
 
-export const off = <T extends TranscodesEventName>(
+export const off = async <T extends TranscodesEventName>(
   event: T,
   callback: EventCallback<T>
-): void => client().off(event, callback);
+): Promise<void> => (await client()).off(event, callback);

@@ -36,7 +36,7 @@ export type TranscodesEventName =
   (typeof TranscodesEventNames)[keyof typeof TranscodesEventNames];
 
 export type EventCallback<T extends TranscodesEventName> = (
-  payload: TranscodesEventMap[T],
+  payload: TranscodesEventMap[T]
 ) => void;
 
 export type TranscodesAPI = TranscodesStaticAPI | TranscodesDynamicAPI;
@@ -68,7 +68,7 @@ export interface TranscodesBaseAPI {
     allowedRoles: string[];
   }) => Promise<ApiResponse<null>>;
   openAuthIdpModal: (
-    params: IdpOpenParams & { projectId?: string },
+    params: IdpOpenParams & { projectId?: string }
   ) => Promise<ApiResponse<IdpAuthResponse[]>>;
   trackUserAction: (
     event: {
@@ -82,7 +82,7 @@ export interface TranscodesBaseAPI {
     options?: {
       requireAuth?: boolean;
       webhookNotification?: boolean;
-    },
+    }
   ) => Promise<void>;
   isPwaInstalled: () => boolean;
 }
@@ -90,7 +90,7 @@ export interface TranscodesBaseAPI {
 export interface TranscodesInitOptions {
   projectId: string;
   /** @deprecated Server derives rpId from project domain_url. */
-  rpId?: string;
+  rpid?: string;
   customUserId?: string;
   debug?: boolean;
 }
@@ -115,11 +115,11 @@ export interface PublicUserAPI {
 export interface PublicEventAPI {
   on<T extends TranscodesEventName>(
     event: T,
-    callback: EventCallback<T>,
+    callback: EventCallback<T>
   ): () => void;
   off<T extends TranscodesEventName>(
     event: T,
-    callback: EventCallback<T>,
+    callback: EventCallback<T>
   ): void;
 }
 
