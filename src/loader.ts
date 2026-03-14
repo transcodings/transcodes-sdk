@@ -11,7 +11,7 @@ import type {
 } from './types';
 import { CDN_BASE } from './constants';
 
-let initPromise: Promise<void> | null = null;
+let initPromise: Promise<Window['transcodes']> | null = null;
 
 function client(): Window['transcodes'] {
   if (typeof window === 'undefined' || !window.transcodes) {
@@ -83,7 +83,10 @@ export async function init(
     return;
   }
 
-  if (initPromise) return initPromise;
+  if (initPromise) {
+    await initPromise;
+    return;
+  }
 
   initPromise = (async () => {
     try {
@@ -95,18 +98,19 @@ export async function init(
           ...options,
         });
       }
+      return sdk;
     } catch (err) {
       initPromise = null;
       throw err;
     }
   })();
 
-  return initPromise;
+  await initPromise;
 }
 
 // ─── Ready Check ────────────────────────────────────────────────────────────
 
-export function whenReady(): Promise<void> {
+export function whenReady(): Promise<Window['transcodes']> {
   if (!initPromise) {
     return Promise.reject(
       new Error('[transcodes-sdk] init() has not been called yet.')
@@ -125,29 +129,21 @@ export function isInitialized(): boolean {
 
 // ─── Token API ───────────────────────────────────────────────────────────────
 
-export const getAccessToken = async (): Promise<string | null> => {
-  await whenReady();
-  return client().token.getAccessToken();
-};
+export const getAccessToken = async (): Promise<string | null> =>
+  (await whenReady()).token.getAccessToken();
 
-export const getCurrentUser = async (): Promise<User | null> => {
-  await whenReady();
-  return client().token.getCurrentUser();
-};
+export const getCurrentUser = async (): Promise<User | null> =>
+  (await whenReady()).token.getCurrentUser();
 
 export const hasToken = (): boolean => client().token.hasToken();
 
-export const isAuthenticated = async (): Promise<boolean> => {
-  await whenReady();
-  return client().token.isAuthenticated();
-};
+export const isAuthenticated = async (): Promise<boolean> =>
+  (await whenReady()).token.isAuthenticated();
 
 export const signOut = async (options?: {
   webhookNotification?: boolean;
-}): Promise<void> => {
-  await whenReady();
-  return client().token.signOut(options);
-};
+}): Promise<void> =>
+  (await whenReady()).token.signOut(options);
 
 // ─── User API ────────────────────────────────────────────────────────────────
 
@@ -156,42 +152,32 @@ export const getUser = async (params: {
   userId?: string;
   email?: string;
   fields?: string;
-}): Promise<ApiResponse<User[]>> => {
-  await whenReady();
-  return client().user.get(params);
-};
+}): Promise<ApiResponse<User[]>> =>
+  (await whenReady()).user.get(params);
 
 // ─── Modal API ───────────────────────────────────────────────────────────────
 
 export const openAuthLoginModal = async (params: {
   projectId?: string;
   webhookNotification?: boolean;
-}): Promise<ApiResponse<AuthResult[]>> => {
-  await whenReady();
-  return client().openAuthLoginModal(params);
-};
+}): Promise<ApiResponse<AuthResult[]>> =>
+  (await whenReady()).openAuthLoginModal(params);
 
 export const openAuthConsoleModal = async (params?: {
   projectId?: string;
-}): Promise<ApiResponse<null>> => {
-  await whenReady();
-  return client().openAuthConsoleModal(params);
-};
+}): Promise<ApiResponse<null>> =>
+  (await whenReady()).openAuthConsoleModal(params);
 
 export const openAuthAdminModal = async (params: {
   projectId?: string;
   allowedRoles: string[];
-}): Promise<ApiResponse<null>> => {
-  await whenReady();
-  return client().openAuthAdminModal(params);
-};
+}): Promise<ApiResponse<null>> =>
+  (await whenReady()).openAuthAdminModal(params);
 
 export const openAuthIdpModal = async (
   params: IdpOpenParams & { projectId?: string }
-): Promise<ApiResponse<IdpAuthResponse[]>> => {
-  await whenReady();
-  return client().openAuthIdpModal(params);
-};
+): Promise<ApiResponse<IdpAuthResponse[]>> =>
+  (await whenReady()).openAuthIdpModal(params);
 
 // ─── Audit API ───────────────────────────────────────────────────────────────
 
@@ -208,10 +194,8 @@ export const trackUserAction = async (
     requireAuth?: boolean;
     webhookNotification?: boolean;
   }
-): Promise<void> => {
-  await whenReady();
-  return client().trackUserAction(event, options);
-};
+): Promise<void> =>
+  (await whenReady()).trackUserAction(event, options);
 
 // ─── PWA ─────────────────────────────────────────────────────────────────────
 
