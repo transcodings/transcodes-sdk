@@ -44,9 +44,17 @@ function waitForTranscodes(
   });
 }
 
-function loadScript(projectKey: string): Promise<void> {
+function resolveScriptSrc(projectKey: string, baseUrl?: string): string {
+  // baseUrl이 지정된 경우 로컬 백엔드에서 온디맨드 컴파일 스크립트를 로드
+  if (baseUrl) {
+    return `${baseUrl.replace(/\/$/, '')}/v1/project/${projectKey}/webworker`;
+  }
+  return `${CDN_BASE}/${projectKey}/webworker.js`;
+}
+
+function loadScript(projectKey: string, baseUrl?: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    const scriptSrc = `${CDN_BASE}/${projectKey}/webworker.js`;
+    const scriptSrc = resolveScriptSrc(projectKey, baseUrl);
 
     // 이미 스크립트가 주입된 경우: window.transcodes 준비 여부만 확인
     if (document.querySelector(`script[src="${scriptSrc}"]`)) {
@@ -55,7 +63,8 @@ function loadScript(projectKey: string): Promise<void> {
     }
 
     const script = document.createElement('script');
-    script.type = 'module';
+    // baseUrl 지정 시(로컬 백엔드) IIFE 포맷이므로 type="module" 불필요
+    script.type = baseUrl ? 'text/javascript' : 'module';
     script.src = scriptSrc;
     // onload는 파일 실행 완료를 보장하지만, webworker.js 내부의 비동기 초기화까지는
     // 보장하지 않으므로 window.transcodes 가 실제로 세팅될 때까지 폴링
@@ -81,7 +90,7 @@ export async function init(
     return;
   }
 
-  await loadScript(projectId);
+  await loadScript(projectId, options?.baseUrl);
   const sdk = window.transcodes;
   if ('init' in sdk) {
     await (sdk as TranscodesDynamicAPI).init({

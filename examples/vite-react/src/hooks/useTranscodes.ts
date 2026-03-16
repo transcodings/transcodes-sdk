@@ -2,6 +2,7 @@
 // SSR 없는 순수 브라우저 환경이므로 별도 guard 불필요.
 import { useState, useEffect, useCallback, useRef } from 'react';
 import * as Transcodes from '@bigstrider/transcodes-sdk';
+import { DEV_EXAMPLE_URL } from '../../../constants';
 import type { User } from '@bigstrider/transcodes-sdk';
 
 type SdkStatus = 'idle' | 'initializing' | 'ready' | 'error';
@@ -36,7 +37,7 @@ export function useTranscodes() {
     setStatus('initializing');
     setErrorMsg('');
     try {
-      await Transcodes.init(projectId);
+      await Transcodes.init(projectId, { baseUrl: DEV_EXAMPLE_URL });
       const authed = await Transcodes.isAuthenticated();
       setIsAuthenticated(authed);
       setUser(authed ? await Transcodes.getCurrentUser() : null);

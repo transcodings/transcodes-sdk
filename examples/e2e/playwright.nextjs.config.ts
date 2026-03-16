@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { DEV_EXAMPLE_PORT, DEV_EXAMPLE_URL } from '../constants';
 
 export default defineConfig({
   testDir: './tests',
@@ -6,7 +7,7 @@ export default defineConfig({
   workers: 1,
   reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report/nextjs' }]],
   use: {
-    baseURL: 'http://localhost:9999',
+    baseURL: DEV_EXAMPLE_URL,
     trace: 'on-first-retry',
     actionTimeout: 10000,
     launchOptions: {
@@ -15,9 +16,9 @@ export default defineConfig({
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
-    command: 'node_modules/.bin/next dev --port 9999',
+    command: `node_modules/.bin/next dev --port ${DEV_EXAMPLE_PORT}`,
     cwd: '../nextjs',
-    port: 9999,
+    port: DEV_EXAMPLE_PORT,
     reuseExistingServer: true,
     timeout: 30000,
   },

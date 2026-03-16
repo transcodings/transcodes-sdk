@@ -158,6 +158,11 @@ export interface TranscodesInitOptions {
   /** Project ID from Transcodes dashboard */
   projectId: string;
   /**
+   * 로컬 개발용 백엔드 URL. 지정 시 CDN 대신 해당 서버에서 webworker.js를 로드합니다.
+   * 예: 'http://localhost:3500'
+   */
+  baseUrl?: string;
+  /**
    * @deprecated Server derives rpId from project domain_url. This field is no longer required.
    * Relying Party ID - the domain where the SDK is running (e.g., 'example.com')
    */

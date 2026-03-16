@@ -45,7 +45,8 @@ export default function TranscodesDemo() {
     setStatus('initializing');
     setErrorMsg('');
     try {
-      await Transcodes.init(projectId.trim());
+      // Next.js는 프로젝트 루트 밖 임포트 불가하므로 baseUrl 직접 지정
+      await Transcodes.init(projectId.trim(), { baseUrl: window.location.origin });
       const authed = await Transcodes.isAuthenticated();
       setIsAuth(authed);
       setUser(authed ? await Transcodes.getCurrentUser() : null);

@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
+import { DEV_EXAMPLE_URL, TEST_PROJECT_ID } from '../../constants';
 
-const BASE_URL = 'http://localhost:9999';
-const PROJECT_ID = 'K2UTF2ce3c';
+const BASE_URL = DEV_EXAMPLE_URL;
+const PROJECT_ID = TEST_PROJECT_ID;
 
 test.describe('Vite + React 19 — SDK 통합', () => {
   test.beforeEach(async ({ page }) => {
@@ -49,21 +50,16 @@ test.describe('Vite + React 19 — SDK 통합', () => {
     await expect(page.getByText('이벤트 로그')).not.toBeVisible();
   });
 
-  test('openAuthLoginModal — API 응답 반환 확인', async ({ page }) => {
+  test('openAuthLoginModal — 모달 열림 확인', async ({ page }) => {
     await page.getByPlaceholder('Project ID').fill(PROJECT_ID);
     await page.getByRole('button', { name: 'Init SDK' }).click();
     await expect(page.getByText('ready')).toBeVisible({ timeout: 30000 });
 
-    await expect(page.getByRole('button', { name: 'Login Modal' })).toBeEnabled();
+    // Login Modal 버튼 클릭 (비동기 — resolve 대기하지 않음)
+    await page.getByRole('button', { name: 'Login Modal' }).click();
 
-    // localhost에서는 도메인 불일치로 success: false 반환이 정상 동작
-    const result = await page.evaluate(async () => {
-      const res = await (window as any).transcodes.openAuthLoginModal({ webhookNotification: false });
-      return res;
-    });
-
-    expect(result).toHaveProperty('success');
-    expect(result).toHaveProperty('payload');
-    expect(typeof result.success).toBe('boolean');
+    // auth-login-modal 커스텀 엘리먼트가 DOM에 추가되면 모달이 열린 것
+    const modal = page.locator('auth-login-modal');
+    await expect(modal).toBeAttached({ timeout: 10000 });
   });
 });

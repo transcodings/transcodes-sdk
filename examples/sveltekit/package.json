@@ -3,9 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite dev --port 3011",
+    "dev": "vite dev --port 9999",
     "build": "vite build",
-    "preview": "vite preview --port 3011"
+    "preview": "vite preview --port 9999"
   },
   "dependencies": {
     "@bigstrider/transcodes-sdk": "file:../../",
