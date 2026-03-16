@@ -48,7 +48,7 @@ function waitForTranscodes(
 
 function loadScript(projectKey: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    const scriptSrc = `${CDN_BASE}/${projectKey}/webworker.js`;
+    const scriptSrc = `${CDN_BASE}/dynamic.min.js`;
 
     // 이미 스크립트가 주입된 경우: window.transcodes 준비 여부만 확인
     if (document.querySelector(`script[src="${scriptSrc}"]`)) {
