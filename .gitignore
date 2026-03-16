@@ -2,12 +2,11 @@
 node_modules
 lib
 
-# Examples — 의존성
-examples/nextjs/node_modules
-examples/sveltekit/node_modules
-examples/vite-react/node_modules
-examples/vue-vite/node_modules
+# Examples — 의존성 & lock 파일
+examples/*/node_modules
+examples/*/package-lock.json
 examples/e2e/node_modules
+examples/e2e/package-lock.json
 
 # Examples — 빌드 결과물
 examples/nextjs/.next
