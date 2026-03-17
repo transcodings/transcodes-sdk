@@ -2,7 +2,6 @@
 // SSR 없는 순수 브라우저 환경이므로 별도 guard 불필요.
 import { ref, onUnmounted } from 'vue';
 import * as Transcodes from '@bigstrider/transcodes-sdk';
-import { DEV_EXAMPLE_URL } from '../../../constants';
 import type { User } from '@bigstrider/transcodes-sdk';
 
 export function useTranscodes() {
@@ -24,7 +23,7 @@ export function useTranscodes() {
     status.value = 'initializing';
     errorMsg.value = '';
     try {
-      await Transcodes.init(projectId, { baseUrl: DEV_EXAMPLE_URL });
+      await Transcodes.init(projectId);
       isAuthenticated.value = await Transcodes.isAuthenticated();
       user.value = isAuthenticated.value ? await Transcodes.getCurrentUser() : null;
       status.value = 'ready';

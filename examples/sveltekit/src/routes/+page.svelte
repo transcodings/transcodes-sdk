@@ -3,7 +3,6 @@
   import { browser } from '$app/environment';
   import { onDestroy } from 'svelte';
   import type { User } from '@bigstrider/transcodes-sdk';
-  import { DEV_EXAMPLE_URL } from '../../../constants';
 
   type SdkStatus = 'idle' | 'initializing' | 'ready' | 'error';
 
@@ -39,7 +38,7 @@
     try {
       // 동적 import로 SSR 번들에서 SDK 완전 제외
       sdk = await import('@bigstrider/transcodes-sdk');
-      await sdk.init(projectId.trim(), { baseUrl: DEV_EXAMPLE_URL });
+      await sdk.init(projectId.trim());
       isAuthenticated = await sdk.isAuthenticated();
       user = isAuthenticated ? await sdk.getCurrentUser() : null;
       status = 'ready';
