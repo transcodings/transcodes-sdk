@@ -1,0 +1,20 @@
+{
+  "name": "transcodes-examples-e2e",
+  "private": true,
+  "scripts": {
+    "test": "npm run test:nextjs && npm run test:sveltekit && npm run test:react && npm run test:vue",
+    "test:nextjs": "playwright test --config playwright.nextjs.config.ts",
+    "test:sveltekit": "playwright test --config playwright.sveltekit.config.ts",
+    "test:react": "playwright test --config playwright.react.config.ts",
+    "test:vue": "playwright test --config playwright.vue.config.ts",
+    "test:headed": "npm run test:nextjs:headed && npm run test:sveltekit:headed && npm run test:react:headed && npm run test:vue:headed",
+    "test:nextjs:headed": "playwright test --config playwright.nextjs.config.ts --headed",
+    "test:sveltekit:headed": "playwright test --config playwright.sveltekit.config.ts --headed",
+    "test:react:headed": "playwright test --config playwright.react.config.ts --headed",
+    "test:vue:headed": "playwright test --config playwright.vue.config.ts --headed",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0"
+  }
+}

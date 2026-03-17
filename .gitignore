@@ -1,3 +1,22 @@
 .npmrc
 node_modules
 lib
+
+# Examples — 의존성 & lock 파일
+examples/*/node_modules
+examples/*/package-lock.json
+examples/e2e/node_modules
+examples/e2e/package-lock.json
+
+# Examples — 빌드 결과물
+examples/nextjs/.next
+examples/nextjs/out
+examples/sveltekit/.svelte-kit
+examples/sveltekit/build
+examples/vite-react/dist
+examples/vue-vite/dist
+
+# E2E — 테스트 결과물
+examples/e2e/test-results
+examples/e2e/playwright-report
+test-results

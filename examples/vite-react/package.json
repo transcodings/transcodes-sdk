@@ -1,0 +1,22 @@
+{
+  "name": "transcodes-example-vite-react",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 9999",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --port 9999"
+  },
+  "dependencies": {
+    "@bigstrider/transcodes-sdk": "file:../../",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.0",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "typescript": "^5.4.5",
+    "vite": "^6.0.0"
+  }
+}
