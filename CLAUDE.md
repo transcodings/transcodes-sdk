@@ -2,9 +2,9 @@
 
 ## Project Identity
 
-`@bigstrider/transcodes-sdk` — Transcodes 플랫폼의 프론트엔드 클라이언트 SDK npm 패키지.
-WebAuthn Passkey 인증, RBAC IDP, 감사 로그, PWA 감지 기능을 `window.transcodes` 글로벌 API에 위임하는 thin wrapper 라이브러리.
-실제 구현체(Dynamic SDK)는 `init()` 호출 시 CDN에서 동적 로드됨 — 이 패키지는 타입 정의 + 로더만 제공.
+`@bigstrider/transcodes-sdk` — Frontend client SDK for the Transcodes platform.
+Thin wrapper that delegates WebAuthn Passkey auth, RBAC IDP, audit logging, and PWA detection to the `window.transcodes` global API.
+The actual implementation (Dynamic SDK) is loaded from CDN on `init()` — this package provides only type definitions + loader.
 
 ## Commands
 
@@ -55,7 +55,7 @@ Pre-release: `npx changeset pre enter alpha|beta`
 
 ## Code Conventions
 
-- Write code comments in **Korean** (코드 주석은 한국어로 작성)
+- Write code comments in **Korean**
 - **No `as` type assertions** — `as const` is the only exception. Use type narrowing or generics instead.
 - Use type-safe constants instead of magic strings
 - Commit messages: **Conventional Commits** format — `type(scope): description`
