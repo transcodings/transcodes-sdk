@@ -23,7 +23,7 @@ export default function App() {
         Transcodes SDK — Vite + React 19
       </h1>
 
-      {/* 상태 뱃지 */}
+      {/* Status badge */}
       <div style={{ marginBottom: '1rem' }}>
         <span style={{
           display: 'inline-block', padding: '2px 10px', borderRadius: '4px',
@@ -38,7 +38,7 @@ export default function App() {
         )}
       </div>
 
-      {/* Project ID 입력 + 초기화 */}
+      {/* Project ID input + initialization */}
       <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '0.5rem' }}>
         <input
           type="text"
@@ -53,17 +53,17 @@ export default function App() {
           disabled={!projectId.trim() || status === 'initializing' || status === 'ready'}
           style={{ padding: '6px 16px', cursor: 'pointer', fontFamily: 'monospace' }}
         >
-          {status === 'initializing' ? '초기화 중...' : 'Init SDK'}
+          {status === 'initializing' ? 'Initializing...' : 'Init SDK'}
         </button>
       </div>
 
-      {/* 인증 상태 및 액션 버튼 */}
+      {/* Auth status and action buttons */}
       {status === 'ready' && (
         <div style={{ marginBottom: '1.5rem', padding: '1rem', border: '1px solid #e0e0e0' }}>
           <div style={{ marginBottom: '0.75rem', fontSize: '0.9rem' }}>
-            <strong>인증 상태:</strong>{' '}
+            <strong>Auth Status:</strong>{' '}
             <span style={{ color: isAuthenticated ? '#1a7a1a' : '#888' }}>
-              {isAuthenticated ? `✓ 인증됨 (${user?.email ?? '이메일 없음'})` : '미인증'}
+              {isAuthenticated ? `✓ Authenticated (${user?.email ?? 'No email'})` : 'Not authenticated'}
             </span>
           </div>
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -85,10 +85,10 @@ export default function App() {
         </div>
       )}
 
-      {/* AUTH_STATE_CHANGED 이벤트 로그 */}
+      {/* AUTH_STATE_CHANGED event log */}
       {eventLog.length > 0 && (
         <div>
-          <strong style={{ fontSize: '0.85rem' }}>이벤트 로그</strong>
+          <strong style={{ fontSize: '0.85rem' }}>Event Log</strong>
           <ul style={{ listStyle: 'none', padding: 0, margin: '0.5rem 0 0', fontSize: '0.8rem', color: '#555' }}>
             {eventLog.map((log, i) => (
               <li key={i} style={{ padding: '3px 0', borderBottom: '1px solid #f0f0f0' }}>{log}</li>

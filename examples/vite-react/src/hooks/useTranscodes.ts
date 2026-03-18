@@ -1,5 +1,5 @@
-// SDK 상태와 액션을 캡슐화하는 커스텀 훅.
-// SSR 없는 순수 브라우저 환경이므로 별도 guard 불필요.
+// Custom hook that encapsulates SDK state and actions.
+// Pure browser environment with no SSR, so no additional guards needed.
 import { useState, useEffect, useCallback, useRef } from 'react';
 import * as Transcodes from '@bigstrider/transcodes-sdk';
 import type { User } from '@bigstrider/transcodes-sdk';
@@ -12,12 +12,12 @@ export function useTranscodes() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [eventLog, setEventLog] = useState<string[]>([]);
   const [errorMsg, setErrorMsg] = useState('');
-  // AUTH_STATE_CHANGED 구독 해제 함수 저장
+  // Stores the AUTH_STATE_CHANGED unsubscribe function
   const unsubscribeRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     if (status !== 'ready') return;
-    // init() 완료 후에만 이벤트 구독
+    // Subscribe to events only after init() completes
     unsubscribeRef.current = Transcodes.on('AUTH_STATE_CHANGED', (payload) => {
       setIsAuthenticated(payload.isAuthenticated);
       setUser(payload.user);
@@ -42,14 +42,13 @@ export function useTranscodes() {
       setUser(authed ? await Transcodes.getCurrentUser() : null);
       setStatus('ready');
     } catch (e) {
-      setErrorMsg(e instanceof Error ? e.message : '초기화 실패');
+      setErrorMsg(e instanceof Error ? e.message : 'Initialization failed');
       setStatus('error');
     }
   }, []);
 
   const login = useCallback(async () => {
     const result = await Transcodes.openAuthLoginModal({ webhookNotification: false });
-    console.log("🚀 ~ result:", result)
     if (result.success && result.payload?.[0]) {
       setIsAuthenticated(true);
       setUser(result.payload[0].user);

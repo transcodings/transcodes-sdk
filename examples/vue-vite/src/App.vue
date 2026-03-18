@@ -22,7 +22,7 @@ const statusColors = {
       Transcodes SDK — Vue 3 + Vite
     </h1>
 
-    <!-- 상태 뱃지 -->
+    <!-- Status badge -->
     <div style="margin-bottom: 1rem;">
       <span :style="{
         display: 'inline-block', padding: '2px 10px', borderRadius: '4px',
@@ -35,7 +35,7 @@ const statusColors = {
       </span>
     </div>
 
-    <!-- Project ID 입력 + 초기화 -->
+    <!-- Project ID input + initialization -->
     <div style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem;">
       <input
         v-model="projectId"
@@ -49,16 +49,16 @@ const statusColors = {
         :disabled="!projectId.trim() || status === 'initializing' || status === 'ready'"
         style="padding: 6px 16px; cursor: pointer; font-family: monospace;"
       >
-        {{ status === 'initializing' ? '초기화 중...' : 'Init SDK' }}
+        {{ status === 'initializing' ? 'Initializing...' : 'Init SDK' }}
       </button>
     </div>
 
-    <!-- 인증 상태 및 액션 버튼 -->
+    <!-- Auth status and action buttons -->
     <div v-if="status === 'ready'" style="margin-bottom: 1.5rem; padding: 1rem; border: 1px solid #e0e0e0;">
       <div style="margin-bottom: 0.75rem; font-size: 0.9rem;">
-        <strong>인증 상태:</strong>
+        <strong>Auth Status:</strong>
         <span :style="{ color: isAuthenticated ? '#1a7a1a' : '#888' }">
-          {{ isAuthenticated ? `✓ 인증됨 (${user?.email ?? '이메일 없음'})` : '미인증' }}
+          {{ isAuthenticated ? `✓ Authenticated (${user?.email ?? 'No email'})` : 'Not authenticated' }}
         </span>
       </div>
       <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
@@ -76,9 +76,9 @@ const statusColors = {
       </div>
     </div>
 
-    <!-- AUTH_STATE_CHANGED 이벤트 로그 -->
+    <!-- AUTH_STATE_CHANGED event log -->
     <div v-if="eventLog.length > 0">
-      <strong style="font-size: 0.85rem;">이벤트 로그</strong>
+      <strong style="font-size: 0.85rem;">Event Log</strong>
       <ul style="list-style: none; padding: 0; margin: 0.5rem 0 0; font-size: 0.8rem; color: #555;">
         <li
           v-for="(log, i) in eventLog"
