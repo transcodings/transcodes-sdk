@@ -43,7 +43,7 @@ export type TranscodesEventName =
  * @param payload - The event-specific payload corresponding to the event name.
  */
 export type EventCallback<T extends TranscodesEventName> = (
-  payload: TranscodesEventMap[T],
+  payload: TranscodesEventMap[T]
 ) => void;
 
 /** Union of static and dynamic SDK API surfaces exposed on `window.transcodes`. */
@@ -79,7 +79,7 @@ export interface TranscodesBaseAPI {
     allowedRoles: string[];
   }) => Promise<ApiResponse<null>>;
   openAuthIdpModal: (
-    params: IdpOpenParams & { projectId?: string },
+    params: IdpOpenParams & { projectId?: string }
   ) => Promise<ApiResponse<IdpAuthResponse[]>>;
   trackUserAction: (
     event: {
@@ -93,7 +93,7 @@ export interface TranscodesBaseAPI {
     options?: {
       requireAuth?: boolean;
       webhookNotification?: boolean;
-    },
+    }
   ) => Promise<void>;
   isPwaInstalled: () => boolean;
 }
@@ -101,11 +101,6 @@ export interface TranscodesBaseAPI {
 /** Configuration options for SDK initialization. */
 export interface TranscodesInitOptions {
   projectId: string;
-  /**
-   * Backend URL for local development. When specified, loads webworker.js from this server instead of the CDN.
-   * Example: 'http://localhost:3500'
-   */
-  baseUrl?: string;
   /** @deprecated Server derives rpId from project domain_url. */
   rpId?: string;
   customUserId?: string;
@@ -135,11 +130,11 @@ export interface PublicUserAPI {
 export interface PublicEventAPI {
   on<T extends TranscodesEventName>(
     event: T,
-    callback: EventCallback<T>,
+    callback: EventCallback<T>
   ): () => void;
   off<T extends TranscodesEventName>(
     event: T,
-    callback: EventCallback<T>,
+    callback: EventCallback<T>
   ): void;
 }
 

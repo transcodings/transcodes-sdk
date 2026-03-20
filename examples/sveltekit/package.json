@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite dev --port 9999",
+    "dev": "npx kill-port 9999 && vite dev --port 9999",
     "build": "vite build",
     "preview": "vite preview --port 9999"
   },
