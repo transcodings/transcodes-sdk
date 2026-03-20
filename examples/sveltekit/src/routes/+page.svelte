@@ -1,12 +1,12 @@
 <script lang="ts">
-  // browser: SSR 환경 여부 확인. true면 브라우저 실행 보장.
+  // browser: checks SSR environment. true guarantees browser execution.
   import { browser } from '$app/environment';
   import { onDestroy } from 'svelte';
   import type { User } from '@bigstrider/transcodes-sdk';
 
   type SdkStatus = 'idle' | 'initializing' | 'ready' | 'error';
 
-  // Svelte 5 runes 모드
+  // Svelte 5 runes mode
   let projectId = $state('');
   let status = $state<SdkStatus>('idle');
   let user = $state<User | null>(null);
@@ -21,9 +21,9 @@
     error: '#cc0000',
   };
 
-  // 동적 import 후 SDK 모듈 참조 저장
+  // Stores SDK module reference after dynamic import
   let sdk: typeof import('@bigstrider/transcodes-sdk') | null = null;
-  // AUTH_STATE_CHANGED 구독 해제 함수
+  // AUTH_STATE_CHANGED unsubscribe function
   let unsubscribe: (() => void) | null = null;
 
   onDestroy(() => {
@@ -31,19 +31,19 @@
   });
 
   async function handleInit() {
-    // browser guard: SSR에서는 실행 불가
+    // browser guard: cannot run during SSR
     if (!browser || !projectId.trim()) return;
     status = 'initializing';
     errorMsg = '';
     try {
-      // 동적 import로 SSR 번들에서 SDK 완전 제외
+      // Dynamic import to fully exclude SDK from the SSR bundle
       sdk = await import('@bigstrider/transcodes-sdk');
       await sdk.init(projectId.trim());
       isAuthenticated = await sdk.isAuthenticated();
       user = isAuthenticated ? await sdk.getCurrentUser() : null;
       status = 'ready';
 
-      // init 완료 후 이벤트 구독
+      // Subscribe to events after init completes
       unsubscribe = sdk.on('AUTH_STATE_CHANGED', (payload) => {
         isAuthenticated = payload.isAuthenticated;
         user = payload.user;
@@ -53,7 +53,7 @@
         ];
       });
     } catch (e) {
-      errorMsg = e instanceof Error ? e.message : '초기화 실패';
+      errorMsg = e instanceof Error ? e.message : 'Initialization failed';
       status = 'error';
     }
   }
@@ -85,7 +85,7 @@
     Transcodes SDK — SvelteKit (Svelte 5)
   </h1>
 
-  <!-- 상태 뱃지 -->
+  <!-- Status badge -->
   <div style="margin-bottom: 1rem;">
     <span style="display: inline-block; padding: 2px 10px; border-radius: 4px; background: {statusColors[status]}; color: #fff; font-size: 0.85rem;">
       {status}
@@ -95,7 +95,7 @@
     {/if}
   </div>
 
-  <!-- Project ID 입력 + 초기화 -->
+  <!-- Project ID input + initialization -->
   <div style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem;">
     <input
       type="text"
@@ -109,17 +109,17 @@
       disabled={!projectId.trim() || status === 'initializing' || status === 'ready'}
       style="padding: 6px 16px; cursor: pointer; font-family: monospace;"
     >
-      {status === 'initializing' ? '초기화 중...' : 'Init SDK'}
+      {status === 'initializing' ? 'Initializing...' : 'Init SDK'}
     </button>
   </div>
 
-  <!-- 인증 상태 및 액션 버튼 -->
+  <!-- Auth status and action buttons -->
   {#if status === 'ready'}
     <div style="margin-bottom: 1.5rem; padding: 1rem; border: 1px solid #e0e0e0;">
       <div style="margin-bottom: 0.75rem; font-size: 0.9rem;">
-        <strong>인증 상태:</strong>
+        <strong>Auth Status:</strong>
         <span style="color: {isAuthenticated ? '#1a7a1a' : '#888'};">
-          {isAuthenticated ? `✓ 인증됨 (${user?.email ?? '이메일 없음'})` : '미인증'}
+          {isAuthenticated ? `✓ Authenticated (${user?.email ?? 'No email'})` : 'Not authenticated'}
         </span>
       </div>
       <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
@@ -139,10 +139,10 @@
     </div>
   {/if}
 
-  <!-- AUTH_STATE_CHANGED 이벤트 로그 -->
+  <!-- AUTH_STATE_CHANGED event log -->
   {#if eventLog.length > 0}
     <div>
-      <strong style="font-size: 0.85rem;">이벤트 로그</strong>
+      <strong style="font-size: 0.85rem;">Event Log</strong>
       <ul style="list-style: none; padding: 0; margin: 0.5rem 0 0; font-size: 0.8rem; color: #555;">
         {#each eventLog as log}
           <li style="padding: 3px 0; border-bottom: 1px solid #f0f0f0;">{log}</li>

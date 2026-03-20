@@ -1,35 +1,35 @@
 # @bigstrider/transcodes-sdk
 
-A frontend client SDK for the Transcodes platform. This wrapper library provides simple access to WebAuthn Passkey authentication, RBAC IDP, audit logging, and PWA detection features in host web applications.
+Transcodes 플랫폼의 프론트엔드 클라이언트 SDK입니다. WebAuthn Passkey 인증, RBAC IDP, 감사 로그, PWA 감지 기능을 호스트 웹앱에서 간단하게 사용할 수 있도록 하는 래퍼 라이브러리입니다.
 
-The actual SDK implementation (Dynamic SDK) is dynamically loaded from the CDN on a per-project basis when `init()` is called. This package only includes **type definitions and a loader (script injection + polling)**.
+실제 SDK 구현체(Dynamic SDK)는 `init()` 호출 시 CDN에서 프로젝트별 스크립트를 동적으로 로드합니다. 이 패키지는 **타입 정의와 로더(script injection + polling)** 만 포함합니다.
 
-## Installation
+## 설치
 
 ```bash
 npm install @bigstrider/transcodes-sdk
 ```
 
-## Quick Start
+## 빠른 시작
 
 ```typescript
 import { init, openAuthLoginModal, on } from '@bigstrider/transcodes-sdk';
 
-// 1. Initialize (loads Dynamic SDK from CDN)
+// 1. 초기화 (CDN에서 Dynamic SDK 로드)
 await init('YOUR_PROJECT_ID');
 
-// 2. Open login modal
+// 2. 로그인 모달 열기
 const result = await openAuthLoginModal({ webhookNotification: false });
 if (result.success) {
-  console.log('Login successful:', result.payload[0].user);
+  console.log('로그인 성공:', result.payload[0].user);
 }
 
-// 3. Subscribe to auth state changes
+// 3. 인증 상태 변화 구독
 const unsubscribe = on('AUTH_STATE_CHANGED', ({ isAuthenticated, user }) => {
-  console.log('Auth state:', isAuthenticated, user);
+  console.log('인증 상태:', isAuthenticated, user);
 });
 
-// 4. Unsubscribe
+// 4. 구독 해제
 unsubscribe();
 ```
 
@@ -39,54 +39,54 @@ unsubscribe();
 
 ### `init(projectId, options?)`
 
-Loads and initializes the project-specific Dynamic SDK from the CDN.
-Automatically skipped in SSR environments.
+CDN에서 프로젝트별 Dynamic SDK를 로드하고 초기화합니다.
+SSR 환경에서 호출 시 자동으로 스킵됩니다.
 
 ```typescript
 await init('YOUR_PROJECT_ID');
 await init('YOUR_PROJECT_ID', { customUserId: 'user-123', debug: true });
 ```
 
-| Option | Type | Description |
+| 옵션 | 타입 | 설명 |
 |---|---|---|
-| `customUserId` | `string` | External user ID to associate with the authenticated user |
-| `debug` | `boolean` | Enable debug logging |
+| `customUserId` | `string` | 인증 사용자에게 연결할 외부 사용자 ID |
+| `debug` | `boolean` | 디버그 로그 활성화 |
 
 ---
 
-### Auth Modals
+### 인증 모달
 
 ```typescript
-// Login (WebAuthn Passkey)
+// 로그인 (WebAuthn Passkey)
 const result = await openAuthLoginModal({ webhookNotification: false });
 // result: ApiResponse<AuthResult[]>
 
-// User console (after authentication)
+// 사용자 콘솔 (인증 완료 후)
 await openAuthConsoleModal();
 
-// Admin console (includes RBAC role check)
+// 어드민 콘솔 (RBAC 역할 검사 포함)
 await openAuthAdminModal({ allowedRoles: ['admin', 'manager'] });
 
-// IDP auth modal (RBAC resource access)
+// IDP 인증 모달 (RBAC 리소스 접근)
 await openAuthIdpModal({ resource: 'invoice', action: 'read' });
 ```
 
 ---
 
-### Token / User
+### 토큰 / 사용자
 
 ```typescript
 const isLoggedIn = await isAuthenticated();   // boolean
 const user = await getCurrentUser();          // User | null
 const token = await getAccessToken();         // string | null
-const hasSession = hasToken();                // boolean (synchronous)
+const hasSession = hasToken();                // boolean (동기)
 
 await signOut({ webhookNotification: false });
 ```
 
 ---
 
-### User Lookup
+### 사용자 조회
 
 ```typescript
 const res = await getUser({ email: 'user@example.com' });
@@ -95,9 +95,9 @@ const res = await getUser({ email: 'user@example.com' });
 
 ---
 
-### Event Subscription
+### 이벤트 구독
 
-`on()` returns an unsubscribe function.
+`on()` 은 unsubscribe 함수를 반환합니다.
 
 ```typescript
 const unsubscribe = on('AUTH_STATE_CHANGED', (payload) => {
@@ -108,13 +108,13 @@ on('TOKEN_REFRESHED', ({ accessToken, expiresAt }) => { ... });
 on('TOKEN_EXPIRED', ({ expiredAt }) => { ... });
 on('ERROR', ({ code, message }) => { ... });
 
-// Unsubscribe
+// 구독 해제
 unsubscribe();
-// Or
+// 또는
 off('AUTH_STATE_CHANGED', callback);
 ```
 
-| Event | Payload Type |
+| 이벤트 | payload 타입 |
 |---|---|
 | `AUTH_STATE_CHANGED` | `AuthStateChangedPayload` |
 | `TOKEN_REFRESHED` | `TokenRefreshedPayload` |
@@ -123,7 +123,7 @@ off('AUTH_STATE_CHANGED', callback);
 
 ---
 
-### Audit Log
+### 감사 로그
 
 ```typescript
 await trackUserAction(
@@ -142,11 +142,11 @@ const installed = isPwaInstalled(); // boolean
 
 ---
 
-## Framework Usage Patterns
+## 프레임워크별 사용 패턴
 
 ### Next.js 15 (App Router)
 
-The SDK uses `window`, so it must only be called inside `'use client'` components.
+SDK는 `window`를 사용하므로 `'use client'` 컴포넌트 안에서만 호출해야 합니다.
 
 ```typescript
 // components/TranscodesDemo.tsx
@@ -158,7 +158,7 @@ export function TranscodesDemo() {
   const unsubRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    // init must be called inside a component — do not call from a Server Component
+    // init은 컴포넌트 내부에서 호출 — Server Component에서 호출하면 안 됨
     unsubRef.current = on('AUTH_STATE_CHANGED', (payload) => {
       console.log(payload);
     });
@@ -170,7 +170,7 @@ export function TranscodesDemo() {
 
 ### SvelteKit (Svelte 5)
 
-In SSR environments, exclude the SDK using a `browser` check + dynamic import.
+SSR 환경에서는 `browser` 조건 + dynamic import로 SDK를 제외합니다.
 
 ```svelte
 <script lang="ts">
@@ -194,7 +194,7 @@ In SSR environments, exclude the SDK using a `browser` check + dynamic import.
 
 ### React (Vite / CRA)
 
-Pure CSR, so static imports can be used directly.
+순수 CSR이므로 정적 import 그대로 사용합니다.
 
 ```typescript
 import { useEffect, useRef } from 'react';
@@ -234,7 +234,7 @@ export function useTranscodes() {
 
 ---
 
-## Types
+## 타입
 
 ```typescript
 interface ApiResponse<T> {
@@ -260,16 +260,16 @@ interface AuthResult {
 }
 ```
 
-For the complete type definitions, refer to `src/types.ts` or `node_modules/@bigstrider/transcodes-sdk/lib/types/` after installation.
+전체 타입은 `src/types.ts` 또는 설치 후 `node_modules/@bigstrider/transcodes-sdk/lib/types/` 를 참고하세요.
 
 ---
 
-## Example Apps
+## 예제 앱
 
-For integration examples across 4 frameworks, see the [`examples/`](./examples/README.md) directory.
+4가지 프레임워크 통합 예제는 [`examples/`](./examples/README.md) 디렉토리를 참고하세요.
 
 ---
 
-## License
+## 라이선스
 
 MIT

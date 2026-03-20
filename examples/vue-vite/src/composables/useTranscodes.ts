@@ -1,5 +1,5 @@
 // Vue 3 Composition API composable.
-// SSR 없는 순수 브라우저 환경이므로 별도 guard 불필요.
+// Pure browser environment with no SSR, so no additional guards needed.
 import { ref, onUnmounted } from 'vue';
 import * as Transcodes from '@bigstrider/transcodes-sdk';
 import type { User } from '@bigstrider/transcodes-sdk';
@@ -16,7 +16,7 @@ export function useTranscodes() {
   const errorMsg = ref('');
   const eventLog = ref<string[]>([]);
 
-  // AUTH_STATE_CHANGED 구독 해제 함수
+  // AUTH_STATE_CHANGED unsubscribe function
   let unsubscribe: (() => void) | null = null;
 
   onUnmounted(() => {
@@ -33,7 +33,7 @@ export function useTranscodes() {
       user.value = isAuthenticated.value ? await Transcodes.getCurrentUser() : null;
       status.value = 'ready';
 
-      // init 완료 후 이벤트 구독
+      // Subscribe to events after init completes
       unsubscribe = Transcodes.on('AUTH_STATE_CHANGED', (payload) => {
         isAuthenticated.value = payload.isAuthenticated;
         user.value = payload.user;
@@ -43,7 +43,7 @@ export function useTranscodes() {
         ];
       });
     } catch (e) {
-      errorMsg.value = e instanceof Error ? e.message : '초기화 실패';
+      errorMsg.value = e instanceof Error ? e.message : 'Initialization failed';
       status.value = 'error';
     }
   }

@@ -1,6 +1,6 @@
 'use client';
-// SDK의 모든 호출은 이 클라이언트 컴포넌트 안에서만 실행됨.
-// 'use client' 경계가 SSR 환경에서의 window 접근을 방지.
+// All SDK calls run only inside this client component.
+// The 'use client' boundary prevents window access in SSR.
 import { useState, useEffect, useCallback, useRef } from 'react';
 import * as Transcodes from '@bigstrider/transcodes-sdk';
 import type { User } from '@bigstrider/transcodes-sdk';
@@ -22,17 +22,17 @@ export default function TranscodesDemo() {
   const [isAuth, setIsAuth] = useState(false);
   const [eventLog, setEventLog] = useState<string[]>([]);
   const [errorMsg, setErrorMsg] = useState('');
-  // AUTH_STATE_CHANGED 구독 해제 함수 저장
+  // Stores the AUTH_STATE_CHANGED unsubscribe function
   const unsubscribeRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     if (status !== 'ready') return;
-    // init() 완료 후에만 이벤트 구독
+    // Subscribe to events only after init() completes
     unsubscribeRef.current = Transcodes.on('AUTH_STATE_CHANGED', (payload) => {
       setIsAuth(payload.isAuthenticated);
       setUser(payload.user);
       setEventLog((prev) => [
-        `[${new Date().toLocaleTimeString()}] AUTH_STATE_CHANGED → authenticated=${payload.isAuthenticated}`,
+        `[${new Date().toLocaleTimeString()}] AUTH_STATE_CHANGED → ${payload.isAuthenticated}`,
         ...prev.slice(0, 9),
       ]);
     });
@@ -52,14 +52,13 @@ export default function TranscodesDemo() {
       setUser(authed ? await Transcodes.getCurrentUser() : null);
       setStatus('ready');
     } catch (e) {
-      setErrorMsg(e instanceof Error ? e.message : '초기화 실패');
+      setErrorMsg(e instanceof Error ? e.message : 'Initialization failed');
       setStatus('error');
     }
   }, [projectId]);
 
   const handleLogin = useCallback(async () => {
     const result = await Transcodes.openAuthLoginModal({ webhookNotification: false });
-    console.log("🚀 ~ result:", result)
     if (result.success && result.payload?.[0]) {
       setIsAuth(true);
       setUser(result.payload[0].user);
@@ -80,7 +79,7 @@ export default function TranscodesDemo() {
         Transcodes SDK — Next.js 15 (App Router)
       </h1>
 
-      {/* 상태 뱃지 */}
+      {/* Status badge */}
       <div style={{ marginBottom: '1rem' }}>
         <span style={{
           display: 'inline-block', padding: '2px 10px', borderRadius: '4px',
@@ -95,7 +94,7 @@ export default function TranscodesDemo() {
         )}
       </div>
 
-      {/* Project ID 입력 + 초기화 */}
+      {/* Project ID input + initialization */}
       <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '0.5rem' }}>
         <input
           type="text"
@@ -110,17 +109,17 @@ export default function TranscodesDemo() {
           disabled={!projectId.trim() || status === 'initializing' || status === 'ready'}
           style={{ padding: '6px 16px', cursor: 'pointer', fontFamily: 'monospace' }}
         >
-          {status === 'initializing' ? '초기화 중...' : 'Init SDK'}
+          {status === 'initializing' ? 'Initializing...' : 'Init SDK'}
         </button>
       </div>
 
-      {/* 인증 상태 및 액션 버튼 */}
+      {/* Auth status and action buttons */}
       {status === 'ready' && (
         <div style={{ marginBottom: '1.5rem', padding: '1rem', border: '1px solid #e0e0e0' }}>
           <div style={{ marginBottom: '0.75rem', fontSize: '0.9rem' }}>
-            <strong>인증 상태:</strong>{' '}
+            <strong>Auth Status:</strong>{' '}
             <span style={{ color: isAuth ? '#1a7a1a' : '#888' }}>
-              {isAuth ? `✓ 인증됨 (${user?.email ?? '이메일 없음'})` : '미인증'}
+              {isAuth ? `✓ Authenticated (${user?.email ?? 'No email'})` : 'Not authenticated'}
             </span>
           </div>
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -142,10 +141,10 @@ export default function TranscodesDemo() {
         </div>
       )}
 
-      {/* AUTH_STATE_CHANGED 이벤트 로그 */}
+      {/* AUTH_STATE_CHANGED event log */}
       {eventLog.length > 0 && (
         <div>
-          <strong style={{ fontSize: '0.85rem' }}>이벤트 로그</strong>
+          <strong style={{ fontSize: '0.85rem' }}>Event Log</strong>
           <ul style={{ listStyle: 'none', padding: 0, margin: '0.5rem 0 0', fontSize: '0.8rem', color: '#555' }}>
             {eventLog.map((log, i) => (
               <li key={i} style={{ padding: '3px 0', borderBottom: '1px solid #f0f0f0' }}>{log}</li>

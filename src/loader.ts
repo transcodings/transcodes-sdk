@@ -47,7 +47,7 @@ function waitForTranscodes(
 }
 
 function resolveScriptSrc(projectKey: string, baseUrl?: string): string {
-  // baseUrl이 지정된 경우 로컬 백엔드에서 온디맨드 컴파일 스크립트를 로드
+  // If baseUrl is specified, load the on-demand compiled script from the local backend
   if (baseUrl) {
     return `${baseUrl.replace(/\/$/, '')}/v1/project/${projectKey}/webworker`;
   }
@@ -58,18 +58,18 @@ function loadScript(projectKey: string, baseUrl?: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const scriptSrc = resolveScriptSrc(projectKey, baseUrl);
 
-    // 이미 스크립트가 주입된 경우: window.transcodes 준비 여부만 확인
+    // Script already injected: just wait for window.transcodes to be ready
     if (document.querySelector(`script[src="${scriptSrc}"]`)) {
       waitForTranscodes(projectKey).then(resolve).catch(reject);
       return;
     }
 
     const script = document.createElement('script');
-    // baseUrl 지정 시(로컬 백엔드) IIFE 포맷이므로 type="module" 불필요
+    // When baseUrl is set (local backend), the script is IIFE format so type="module" is unnecessary
     script.type = baseUrl ? 'text/javascript' : 'module';
     script.src = scriptSrc;
-    // onload는 파일 실행 완료를 보장하지만, webworker.js 내부의 비동기 초기화까지는
-    // 보장하지 않으므로 window.transcodes 가 실제로 세팅될 때까지 폴링
+    // onload guarantees the file has executed, but not that webworker.js has finished
+    // its async initialization, so poll until window.transcodes is actually set
     script.onload = () =>
       waitForTranscodes(projectKey).then(resolve).catch(reject);
     script.onerror = () =>
@@ -94,10 +94,10 @@ export async function init(
   projectId: string,
   options?: Omit<TranscodesInitOptions, 'projectId'>
 ): Promise<void> {
-  // 서버 사이드 실행 방지 (SSR Safe-guard)
+  // Prevent server-side execution (SSR safeguard)
   if (typeof window === 'undefined' || typeof document === 'undefined') {
     console.warn(
-      '[transcodes-sdk] init() was called in a non-browser environment. Skipping initialization.'
+      '[transcodes-sdk] init() was called in a server-side environment. Skipping initialization.'
     );
     return;
   }

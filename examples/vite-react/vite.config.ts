@@ -5,7 +5,7 @@ import { DEV_BACKEND_URL } from '../constants';
 export default defineConfig({
   plugins: [react()],
   server: {
-    // 로컬 개발: /v1/project/* 요청을 NestJS 백엔드로 프록시
+    // Local dev: proxy /v1/project/* requests to the NestJS backend
     proxy: {
       '/v1/project': DEV_BACKEND_URL,
     },

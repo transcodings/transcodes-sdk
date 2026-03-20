@@ -102,8 +102,8 @@ export interface TranscodesBaseAPI {
 export interface TranscodesInitOptions {
   projectId: string;
   /**
-   * 로컬 개발용 백엔드 URL. 지정 시 CDN 대신 해당 서버에서 webworker.js를 로드합니다.
-   * 예: 'http://localhost:3500'
+   * Backend URL for local development. When specified, loads webworker.js from this server instead of the CDN.
+   * Example: 'http://localhost:3500'
    */
   baseUrl?: string;
   /** @deprecated Server derives rpId from project domain_url. */

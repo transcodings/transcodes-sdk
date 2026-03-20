@@ -1,53 +1,53 @@
-# SDK E2E 테스트 계획
+# SDK E2E Test Plan
 
-## 기존 테스트 (5~6개 × 4 프레임워크)
+## Existing Tests (5-6 per framework x 4 frameworks)
 
-| # | 테스트명 | nextjs | sveltekit | react | vue |
+| # | Test Name | nextjs | sveltekit | react | vue |
 |---|---------|:---:|:---:|:---:|:---:|
-| 1 | 초기 UI 렌더링 | ✓ | ✓ | ✓ | ✓ |
-| 2 | projectId 없을 때 Init 버튼 비활성화 | ✓ | ✓ | ✓ | ✓ |
-| 3 | SDK 초기화 성공 — ready 상태 전환 | ✓ | ✓ | ✓ | ✓ |
-| 4 | 초기화 완료 후 인증 UI 표시 | ✓ | ✓ | ✓ | ✓ |
-| 5 | openAuthLoginModal — 모달 열림 확인 | ✓ | ✓ | ✓ | ✓ |
-| 6 | 이벤트 로그 초기 상태 확인 | - | - | ✓ | ✓ |
-| 7 | SSR + dynamic SDK 로딩 콘솔 에러 확인 | - | ✓ | - | - |
+| 1 | Initial UI rendering | ✓ | ✓ | ✓ | ✓ |
+| 2 | Init button disabled when projectId is empty | ✓ | ✓ | ✓ | ✓ |
+| 3 | SDK initialization success — transition to ready state | ✓ | ✓ | ✓ | ✓ |
+| 4 | Auth UI displayed after initialization | ✓ | ✓ | ✓ | ✓ |
+| 5 | openAuthLoginModal — verify modal opens | ✓ | ✓ | ✓ | ✓ |
+| 6 | Event log initial state check | - | - | ✓ | ✓ |
+| 7 | SSR + dynamic SDK loading console error check | - | ✓ | - | - |
 
-## 추가 테스트 (9개)
+## Additional Tests (9 tests)
 
 ### High Priority
 
-| # | 테스트명 | 대상 | 방식 | 설명 |
+| # | Test Name | Target | Method | Description |
 |---|---------|------|------|------|
-| H1 | 잘못된 projectId → error 상태 | 4개 전체 | UI | invalid ID 입력 → Init 클릭 → `error` 상태 + 에러 메시지 표시 |
-| H2 | SDK 이중 초기화 멱등성 | 4개 전체 | evaluate | init 후 `isInitialized()` = true 확인 (initPromise 메모이제이션) |
-| H3 | 미인증 상태 API 확인 | 4개 전체 | evaluate | `isAuthenticated()=false`, `hasToken()=false`, `getCurrentUser()=null` |
-| H4 | 초기화 실패 후 재초기화 | 4개 전체 | UI | invalid ID → error → valid ID 입력 → ready (에러 복구) |
+| H1 | Invalid projectId → error state | All 4 | UI | Enter invalid ID → Click Init → `error` state + error message displayed |
+| H2 | SDK double-initialization idempotency | All 4 | evaluate | After init, verify `isInitialized()` = true (initPromise memoization) |
+| H3 | Unauthenticated state API check | All 4 | evaluate | `isAuthenticated()=false`, `hasToken()=false`, `getCurrentUser()=null` |
+| H4 | Re-initialization after init failure | All 4 | UI | Invalid ID → error → Enter valid ID → ready (error recovery) |
 
 ### Medium Priority
 
-| # | 테스트명 | 대상 | 방식 | 설명 |
+| # | Test Name | Target | Method | Description |
 |---|---------|------|------|------|
-| M1 | 미인증 signOut() 무에러 | 4개 전체 | evaluate | 미인증에서 `signOut()` → 에러 없이 완료, 상태 유지 |
-| M2 | getAccessToken() null 반환 | 4개 전체 | evaluate | 미인증에서 `getAccessToken()` → null |
-| M3 | Console Modal DOM 추가 | 4개 전체 | evaluate | `openAuthConsoleModal()` 호출 → 커스텀 엘리먼트 attached |
-| M4 | Login Modal 닫기 후 상태 유지 | 4개 전체 | UI+키보드 | 모달 열기 → Escape → 미인증 상태 유지 |
+| M1 | signOut() without auth causes no error | All 4 | evaluate | Call `signOut()` while unauthenticated → completes without error, state preserved |
+| M2 | getAccessToken() returns null | All 4 | evaluate | Call `getAccessToken()` while unauthenticated → null |
+| M3 | Console Modal DOM attachment | All 4 | evaluate | Call `openAuthConsoleModal()` → custom element attached |
+| M4 | State preserved after closing Login Modal | All 4 | UI+keyboard | Open modal → Escape → unauthenticated state preserved |
 
 ### Low Priority
 
-| # | 테스트명 | 대상 | 방식 | 설명 |
+| # | Test Name | Target | Method | Description |
 |---|---------|------|------|------|
-| L1 | 초기화 중 콘솔 에러 없음 | nextjs, react, vue | 콘솔 리스너 | SvelteKit은 이미 있으므로 나머지 3개에 추가 |
+| L1 | No console errors during initialization | nextjs, react, vue | Console listener | SvelteKit already has this, add to remaining 3 |
 
-## 테스트 실행 방법
+## How to Run Tests
 
-### 전체 테스트
+### All Tests
 
 ```bash
 cd transcodes-sdk/examples/e2e
 npm test
 ```
 
-### 개별 프레임워크
+### Individual Frameworks
 
 ```bash
 npm run test:nextjs
@@ -56,49 +56,49 @@ npm run test:react
 npm run test:vue
 ```
 
-### 특정 테스트만 실행
+### Run Specific Tests
 
 ```bash
-# 테스트명 키워드로 필터
-npx playwright test --config playwright.nextjs.config.ts -g "잘못된 projectId"
-npx playwright test --config playwright.react.config.ts -g "미인증"
+# Filter by test name keyword
+npx playwright test --config playwright.nextjs.config.ts -g "invalid projectId"
+npx playwright test --config playwright.react.config.ts -g "unauthenticated"
 ```
 
-### Headed 모드 (육안 확인)
+### Headed Mode (Visual Inspection)
 
 ```bash
-# 기본 headed
+# Default headed
 npm run test:nextjs:headed
 
-# SLOW_MO로 느리게 (각 액션 사이 3초 딜레이)
-SLOW_MO=3000 npx playwright test --config playwright.nextjs.config.ts --headed -g "모달"
+# Slow down with SLOW_MO (3-second delay between each action)
+SLOW_MO=3000 npx playwright test --config playwright.nextjs.config.ts --headed -g "modal"
 
-# 또는 /test-modal 슬래시 커맨드 사용 (모달 열림 테스트 전용)
+# Or use the /test-modal slash command (dedicated modal open test)
 ```
 
-### 테스트 리포트
+### Test Report
 
 ```bash
 npm run report
 ```
 
-## 구현 패턴
+## Implementation Patterns
 
-### UI 기반 테스트
+### UI-Based Tests
 
 ```typescript
-test('잘못된 projectId → error 상태', async ({ page }) => {
+test('Invalid projectId → error state', async ({ page }) => {
   await page.getByPlaceholder('Project ID').fill('invalid_project_000000000000');
   await page.getByRole('button', { name: 'Init SDK' }).click();
   await expect(page.getByText('error')).toBeVisible({ timeout: 30000 });
 });
 ```
 
-### page.evaluate 기반 테스트 (SDK API 직접 호출)
+### page.evaluate-Based Tests (Direct SDK API Calls)
 
 ```typescript
-test('미인증 상태 API 확인', async ({ page }) => {
-  // ... init + ready 대기 ...
+test('Unauthenticated state API check', async ({ page }) => {
+  // ... init + wait for ready ...
   const state = await page.evaluate(async () => ({
     isAuthenticated: await window.transcodes.token.isAuthenticated(),
     hasToken: window.transcodes.token.hasToken(),
@@ -108,22 +108,22 @@ test('미인증 상태 API 확인', async ({ page }) => {
 });
 ```
 
-### 콘솔 에러 수집 패턴
+### Console Error Collection Pattern
 
 ```typescript
-test('콘솔 에러 없음', async ({ page }) => {
+test('No console errors', async ({ page }) => {
   const errors: string[] = [];
   page.on('console', (msg) => {
     if (msg.type() === 'error') errors.push(msg.text());
   });
-  // ... init + ready 대기 ...
+  // ... init + wait for ready ...
   expect(errors.filter(e => e.includes('[transcodes'))).toHaveLength(0);
 });
 ```
 
-## 주의사항
+## Notes
 
-- invalid projectId 테스트는 CDN 스크립트 로드 시간 포함 **30초 타임아웃** 필요
-- `auth-console-modal` 태그명은 실제 DOM에서 확인 후 조정 가능
-- `initPromise`는 실패 시 `null`로 리셋 → 재시도 가능 (`loader.ts:112`)
-- WebAuthn passkey가 필요한 실제 로그인 플로우는 자동화 불가 → 모달 열림/닫기까지만 테스트
+- Invalid projectId tests require a **30-second timeout** to account for CDN script load time
+- The `auth-console-modal` selector refers to the custom element tag injected by the Dynamic SDK; verify it matches the actual DOM element name in DevTools
+- `initPromise` resets to `null` on failure → retry is possible (`loader.ts:112`)
+- Actual login flows requiring WebAuthn passkeys cannot be automated → tests cover only modal open/close
