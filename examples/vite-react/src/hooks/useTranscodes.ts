@@ -6,6 +6,11 @@ import type { User } from '@bigstrider/transcodes-sdk';
 
 type SdkStatus = 'idle' | 'initializing' | 'ready' | 'error';
 
+/**
+ * React hook that encapsulates Transcodes SDK state and actions.
+ *
+ * @returns SDK status, authenticated user, event log, and action handlers (initialize, login, openConsole, logout).
+ */
 export function useTranscodes() {
   const [status, setStatus] = useState<SdkStatus>('idle');
   const [user, setUser] = useState<User | null>(null);

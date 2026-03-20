@@ -14,6 +14,7 @@ const STATUS_COLORS: Record<SdkStatus, string> = {
   error: '#cc0000',
 };
 
+/** Client-side demo component that exercises the Transcodes SDK (init, login, console, sign-out, event log). */
 export default function TranscodesDemo() {
   const [projectId, setProjectId] = useState('');
   const [status, setStatus] = useState<SdkStatus>('idle');

@@ -4,6 +4,11 @@ import { ref, onUnmounted } from 'vue';
 import * as Transcodes from '@bigstrider/transcodes-sdk';
 import type { User } from '@bigstrider/transcodes-sdk';
 
+/**
+ * Vue 3 composable that encapsulates Transcodes SDK state and actions.
+ *
+ * @returns Reactive SDK status, authenticated user, event log, and action handlers (initialize, login, openConsole, logout).
+ */
 export function useTranscodes() {
   const status = ref<'idle' | 'initializing' | 'ready' | 'error'>('idle');
   const user = ref<User | null>(null);

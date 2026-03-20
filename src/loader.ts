@@ -80,6 +80,16 @@ function loadScript(projectKey: string, baseUrl?: string): Promise<void> {
 
 // ─── Init ────────────────────────────────────────────────────────────────────
 
+/**
+ * Initializes the SDK by loading the Dynamic SDK script from CDN and calling its `init()`.
+ *
+ * Memoized — subsequent calls return the same promise. Resets on failure so callers can retry.
+ * No-ops silently in non-browser environments (SSR safe).
+ *
+ * @param projectId - Transcodes project identifier
+ * @param options - Optional initialization settings (e.g. `baseUrl` for local development)
+ * @throws When the CDN script fails to load or `window.transcodes` does not appear within the timeout
+ */
 export async function init(
   projectId: string,
   options?: Omit<TranscodesInitOptions, 'projectId'>
@@ -119,6 +129,12 @@ export async function init(
 
 // ─── Ready Check ────────────────────────────────────────────────────────────
 
+/**
+ * Returns the initialization promise, allowing callers to await SDK readiness.
+ *
+ * @returns The promise created by {@link init}
+ * @throws When `init()` has not been called yet
+ */
 export function whenReady(): Promise<Window['transcodes']> {
   if (!initPromise) {
     return Promise.reject(
@@ -128,6 +144,7 @@ export function whenReady(): Promise<Window['transcodes']> {
   return initPromise;
 }
 
+/** SSR-safe check of whether the SDK has been initialized. Returns `false` on the server. */
 export function isInitialized(): boolean {
   if (typeof window === 'undefined' || !window.transcodes) return false;
   if ('isInitialized' in window.transcodes) {
@@ -138,17 +155,26 @@ export function isInitialized(): boolean {
 
 // ─── Token API ───────────────────────────────────────────────────────────────
 
+/** Gets the current access token, or `null` if the user is not authenticated. */
 export const getAccessToken = async (): Promise<string | null> =>
   (await whenReady()).token.getAccessToken();
 
+/** Gets the currently authenticated user, or `null` if no user is signed in. */
 export const getCurrentUser = async (): Promise<User | null> =>
   (await whenReady()).token.getCurrentUser();
 
+/**
+ * Synchronously checks if a token exists.
+ *
+ * @throws When the SDK is not initialized
+ */
 export const hasToken = (): boolean => client().token.hasToken();
 
+/** Checks if the user is currently authenticated. */
 export const isAuthenticated = async (): Promise<boolean> =>
   (await whenReady()).token.isAuthenticated();
 
+/** Signs out the current user and clears the session. */
 export const signOut = async (options?: {
   webhookNotification?: boolean;
 }): Promise<void> =>
@@ -156,6 +182,7 @@ export const signOut = async (options?: {
 
 // ─── User API ────────────────────────────────────────────────────────────────
 
+/** Fetches user(s) matching the given query parameters. */
 export const getUser = async (params: {
   projectId?: string;
   userId?: string;
@@ -166,23 +193,27 @@ export const getUser = async (params: {
 
 // ─── Modal API ───────────────────────────────────────────────────────────────
 
+/** Opens the login authentication modal for WebAuthn Passkey sign-in. */
 export const openAuthLoginModal = async (params: {
   projectId?: string;
   webhookNotification?: boolean;
 }): Promise<ApiResponse<AuthResult[]>> =>
   (await whenReady()).openAuthLoginModal(params);
 
+/** Opens the auth console modal for account management. */
 export const openAuthConsoleModal = async (params?: {
   projectId?: string;
 }): Promise<ApiResponse<null>> =>
   (await whenReady()).openAuthConsoleModal(params);
 
+/** Opens the admin authentication modal with role-based access control. */
 export const openAuthAdminModal = async (params: {
   projectId?: string;
   allowedRoles: string[];
 }): Promise<ApiResponse<null>> =>
   (await whenReady()).openAuthAdminModal(params);
 
+/** Opens the IDP authentication modal for RBAC step-up verification. */
 export const openAuthIdpModal = async (
   params: IdpOpenParams & { projectId?: string }
 ): Promise<ApiResponse<IdpAuthResponse[]>> =>
@@ -190,6 +221,7 @@ export const openAuthIdpModal = async (
 
 // ─── Audit API ───────────────────────────────────────────────────────────────
 
+/** Tracks a user action for audit logging. */
 export const trackUserAction = async (
   event: {
     tag: string;
@@ -208,15 +240,35 @@ export const trackUserAction = async (
 
 // ─── PWA ─────────────────────────────────────────────────────────────────────
 
+/**
+ * Synchronously checks if the app is installed as a PWA.
+ *
+ * @throws When the SDK is not initialized
+ */
 export const isPwaInstalled = (): boolean => client().isPwaInstalled();
 
 // ─── Event API ───────────────────────────────────────────────────────────────
 
+/**
+ * Subscribes to an SDK event.
+ *
+ * @param event - Event name to listen for
+ * @param callback - Handler invoked when the event fires
+ * @returns An unsubscribe function that removes the listener
+ * @throws When the SDK is not initialized
+ */
 export const on = <T extends TranscodesEventName>(
   event: T,
   callback: EventCallback<T>
 ): (() => void) => client().on(event, callback);
 
+/**
+ * Unsubscribes from an SDK event.
+ *
+ * @param event - Event name to stop listening for
+ * @param callback - The same handler reference passed to {@link on}
+ * @throws When the SDK is not initialized
+ */
 export const off = <T extends TranscodesEventName>(
   event: T,
   callback: EventCallback<T>
