@@ -13,6 +13,21 @@ import { CDN_BASE } from './constants';
 
 let initPromise: Promise<Window['transcodes']> | null = null;
 
+/**
+ * Returns the initialization promise, allowing callers to await SDK readiness.
+ *
+ * @returns The promise created by {@link init}
+ * @throws When `init()` has not been called yet
+ */
+export function clientAsync(): Promise<Window['transcodes']> {
+  if (!initPromise) {
+    return Promise.reject(
+      new Error('[transcodes-sdk] init() has not been called yet.')
+    );
+  }
+  return initPromise;
+}
+
 function client(): Window['transcodes'] {
   if (typeof window === 'undefined' || !window.transcodes) {
     throw new Error('[transcodes-sdk] SDK not initialized. Call init() first.');
@@ -46,30 +61,21 @@ function waitForTranscodes(
   });
 }
 
-function resolveScriptSrc(projectKey: string, baseUrl?: string): string {
-  // If baseUrl is specified, load the on-demand compiled script from the local backend
-  if (baseUrl) {
-    return `${baseUrl.replace(/\/$/, '')}/v1/project/${projectKey}/webworker`;
-  }
-  return `${CDN_BASE}/dynamic.min.js`;
-}
-
-function loadScript(projectKey: string, baseUrl?: string): Promise<void> {
+function loadScript(projectKey: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    const scriptSrc = resolveScriptSrc(projectKey, baseUrl);
+    const scriptSrc = `${CDN_BASE}/${projectKey}/dynamic.min.js`;
 
-    // Script already injected: just wait for window.transcodes to be ready
+    // Script already injected — just wait for window.transcodes to be ready
     if (document.querySelector(`script[src="${scriptSrc}"]`)) {
       waitForTranscodes(projectKey).then(resolve).catch(reject);
       return;
     }
 
     const script = document.createElement('script');
-    // When baseUrl is set (local backend), the script is IIFE format so type="module" is unnecessary
-    script.type = baseUrl ? 'text/javascript' : 'module';
+    script.type = 'module';
     script.src = scriptSrc;
-    // onload guarantees the file has executed, but not that webworker.js has finished
-    // its async initialization, so poll until window.transcodes is actually set
+    // onload fires when the file has executed, but Dynamic SDK initialization is async,
+    // so poll until window.transcodes is actually set
     script.onload = () =>
       waitForTranscodes(projectKey).then(resolve).catch(reject);
     script.onerror = () =>
@@ -81,20 +87,20 @@ function loadScript(projectKey: string, baseUrl?: string): Promise<void> {
 // ─── Init ────────────────────────────────────────────────────────────────────
 
 /**
- * Initializes the SDK by loading the Dynamic SDK script from CDN and calling its `init()`.
+ * Loads the project-scoped Dynamic SDK script from S3 and initializes it.
  *
  * Memoized — subsequent calls return the same promise. Resets on failure so callers can retry.
  * No-ops silently in non-browser environments (SSR safe).
  *
- * @param projectId - Transcodes project identifier
+ * @param projectId - Transcodes project identifier (used in the script URL path)
  * @param options - Optional initialization settings (e.g. `baseUrl` for local development)
- * @throws When the CDN script fails to load or `window.transcodes` does not appear within the timeout
+ * @throws When the script fails to load or `window.transcodes` does not appear within the timeout
  */
 export async function init(
   projectId: string,
   options?: Omit<TranscodesInitOptions, 'projectId'>
 ): Promise<void> {
-  // Prevent server-side execution (SSR safeguard)
+  // Skip execution in server-side environments (SSR safeguard)
   if (typeof window === 'undefined' || typeof document === 'undefined') {
     console.warn(
       '[transcodes-sdk] init() was called in a server-side environment. Skipping initialization.'
@@ -109,13 +115,10 @@ export async function init(
 
   initPromise = (async () => {
     try {
-      await loadScript(projectId, options?.baseUrl);
+      await loadScript(projectId);
       const sdk = window.transcodes;
       if ('init' in sdk) {
-        await (sdk as TranscodesDynamicAPI).init({
-          projectId: projectId,
-          ...options,
-        });
+        await (sdk as TranscodesDynamicAPI).init({ projectId, ...options });
       }
       return sdk;
     } catch (err) {
@@ -125,23 +128,6 @@ export async function init(
   })();
 
   await initPromise;
-}
-
-// ─── Ready Check ────────────────────────────────────────────────────────────
-
-/**
- * Returns the initialization promise, allowing callers to await SDK readiness.
- *
- * @returns The promise created by {@link init}
- * @throws When `init()` has not been called yet
- */
-export function whenReady(): Promise<Window['transcodes']> {
-  if (!initPromise) {
-    return Promise.reject(
-      new Error('[transcodes-sdk] init() has not been called yet.')
-    );
-  }
-  return initPromise;
 }
 
 /** SSR-safe check of whether the SDK has been initialized. Returns `false` on the server. */
@@ -157,11 +143,12 @@ export function isInitialized(): boolean {
 
 /** Gets the current access token, or `null` if the user is not authenticated. */
 export const getAccessToken = async (): Promise<string | null> =>
-  (await whenReady()).token.getAccessToken();
+  (await clientAsync()).token.getAccessToken();
+
 
 /** Gets the currently authenticated member, or `null` if no member is signed in. */
 export const getCurrentMember = async (): Promise<Member | null> =>
-  (await whenReady()).token.getCurrentMember();
+  (await clientAsync()).token.getCurrentMember();
 
 /**
  * Synchronously checks if a token exists.
@@ -172,13 +159,12 @@ export const hasToken = (): boolean => client().token.hasToken();
 
 /** Checks if the user is currently authenticated. */
 export const isAuthenticated = async (): Promise<boolean> =>
-  (await whenReady()).token.isAuthenticated();
+  (await clientAsync()).token.isAuthenticated();
 
 /** Signs out the current user and clears the session. */
 export const signOut = async (options?: {
   webhookNotification?: boolean;
-}): Promise<void> =>
-  (await whenReady()).token.signOut(options);
+}): Promise<void> => (await clientAsync()).token.signOut(options);
 
 // ─── Member API ──────────────────────────────────────────────────────────────
 
@@ -189,7 +175,7 @@ export const getMember = async (params: {
   email?: string;
   fields?: string;
 }): Promise<ApiResponse<Member[]>> =>
-  (await whenReady()).member.get(params);
+  (await clientAsync()).member.get(params);
 
 // ─── Modal API ───────────────────────────────────────────────────────────────
 
@@ -198,26 +184,26 @@ export const openAuthLoginModal = async (params: {
   projectId?: string;
   webhookNotification?: boolean;
 }): Promise<ApiResponse<AuthResult[]>> =>
-  (await whenReady()).openAuthLoginModal(params);
+  (await clientAsync()).openAuthLoginModal(params);
 
 /** Opens the auth console modal for account management. */
 export const openAuthConsoleModal = async (params?: {
   projectId?: string;
 }): Promise<ApiResponse<null>> =>
-  (await whenReady()).openAuthConsoleModal(params);
+  (await clientAsync()).openAuthConsoleModal(params);
 
 /** Opens the admin authentication modal with role-based access control. */
 export const openAuthAdminModal = async (params: {
   projectId?: string;
   allowedRoles: string[];
 }): Promise<ApiResponse<null>> =>
-  (await whenReady()).openAuthAdminModal(params);
+  (await clientAsync()).openAuthAdminModal(params);
 
 /** Opens the IDP authentication modal for RBAC step-up verification. */
 export const openAuthIdpModal = async (
   params: IdpOpenParams & { projectId?: string }
 ): Promise<ApiResponse<IdpAuthResponse[]>> =>
-  (await whenReady()).openAuthIdpModal(params);
+  (await clientAsync()).openAuthIdpModal(params);
 
 // ─── Audit API ───────────────────────────────────────────────────────────────
 
@@ -235,8 +221,7 @@ export const trackUserAction = async (
     requireAuth?: boolean;
     webhookNotification?: boolean;
   }
-): Promise<void> =>
-  (await whenReady()).trackUserAction(event, options);
+): Promise<void> => (await clientAsync()).trackUserAction(event, options);
 
 // ─── PWA ─────────────────────────────────────────────────────────────────────
 

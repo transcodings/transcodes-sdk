@@ -12,4 +12,4 @@ export const DEV_BACKEND_URL = `http://localhost:${DEV_BACKEND_PORT}`;
 export const DEV_EXAMPLE_URL = `http://localhost:${DEV_EXAMPLE_PORT}`;
 
 // Project configuration for e2e tests
-export const TEST_PROJECT_ID = 'ca46234a595cded3d599990b';
+export const TEST_PROJECT_ID = 'ca47abf37d3ed05be83ef4b1';
