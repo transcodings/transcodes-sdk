@@ -57,14 +57,15 @@ export interface TranscodesStaticAPI extends TranscodesBaseAPI {
 /** API surface for the fully initialized Dynamic SDK. */
 export interface TranscodesDynamicAPI extends TranscodesBaseAPI {
   init: (options: TranscodesInitOptions) => Promise<void>;
-  setConfig: (options: { customUserId?: string }) => void;
+  setConfig: (options: { memberId?: string }) => void;
   isInitialized: () => boolean;
+  getBuildInfo: () => TranscodesBuildInfo;
 }
 
 /** Shared API methods available in both static and dynamic SDK modes. */
 export interface TranscodesBaseAPI {
   token: TokenAPI;
-  user: PublicUserAPI;
+  member: PublicMemberAPI;
   on: PublicEventAPI['on'];
   off: PublicEventAPI['off'];
   openAuthLoginModal: (params: {
@@ -108,27 +109,33 @@ export interface TranscodesInitOptions {
   baseUrl?: string;
   /** @deprecated Server derives rpId from project domain_url. */
   rpId?: string;
-  customUserId?: string;
+  memberId?: string;
   debug?: boolean;
+}
+
+/** Build info exposed by Dynamic SDK (for version/debug tracking). */
+export interface TranscodesBuildInfo {
+  /** ISO timestamp when the SDK bundle was built */
+  buildTimestamp: string;
 }
 
 /** Token management API for authentication state. */
 export interface TokenAPI {
-  getCurrentUser(): Promise<User | null>;
+  getCurrentMember(): Promise<Member | null>;
   getAccessToken(): Promise<string | null>;
   hasToken(): boolean;
   isAuthenticated(): Promise<boolean>;
   signOut(options?: { webhookNotification?: boolean }): Promise<void>;
 }
 
-/** Public API for querying user records. */
-export interface PublicUserAPI {
+/** Public API for querying member records. */
+export interface PublicMemberAPI {
   get(params: {
     projectId?: string;
-    userId?: string;
+    memberId?: string;
     email?: string;
     fields?: string;
-  }): Promise<ApiResponse<User[]>>;
+  }): Promise<ApiResponse<Member[]>>;
 }
 
 /** Event subscription API for SDK lifecycle events. */
@@ -152,10 +159,10 @@ export interface ApiResponse<T> {
   status?: number;
 }
 
-/** Authentication result containing token and user data. */
+/** Authentication result containing token and member data. */
 export interface AuthResult {
   token: string;
-  user: User;
+  member: Member;
 }
 
 /** Parameters for opening the IDP authorization modal. */
@@ -175,16 +182,16 @@ export interface IdpAuthResponse {
   action?: string;
 }
 
-/** Represents a Transcodes platform user. */
-export interface User {
-  id: string;
-  email: string;
+/** Represents a project member (end-user authenticated via WebAuthn). */
+export interface Member {
+  id?: string;
+  projectId?: string;
   name?: string;
+  email?: string;
   role?: string;
-  projectId: string;
-  metadata?: {
-    [key: string]: string | number | boolean | null | undefined;
-  };
+  metadata?: Record<string, string | number | boolean | null | undefined>;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 }
 
 /** Maps event names to their corresponding payload types. */
@@ -195,12 +202,12 @@ export interface TranscodesEventMap {
   ERROR: ErrorPayload;
 }
 
-/** Payload emitted when the user's authentication state changes. */
+/** Payload emitted when the member's authentication state changes. */
 export interface AuthStateChangedPayload {
   isAuthenticated: boolean;
   accessToken: string | null;
   expiresAt: number | null;
-  user: User | null;
+  member: Member | null;
 }
 
 /** Payload emitted when the access token is refreshed. */

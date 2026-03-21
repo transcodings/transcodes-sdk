@@ -97,7 +97,7 @@ export interface TranscodesBaseAPI {
   // Modal methods (public API)
   openAuthLoginModal: (params: {
     projectId?: string;
-    /** Slack 웹훅 알림 발송 여부. true 시 로그인 성공/실패 시 Slack 알림 발송. Default: false */
+    /** Whether to send Slack webhook notifications on login success/failure. Default: false */
     webhookNotification?: boolean;
   }) => Promise<ApiResponse<AuthResult[]>>;
   openAuthConsoleModal: (params?: {
@@ -114,43 +114,43 @@ export interface TranscodesBaseAPI {
 
   // Audit API
   /**
-   * 사용자 행동 추적 (Audit Log)
+   * Track user actions (Audit Log)
    *
-   * @param event - 추적할 이벤트 정보
-   * @param event.tag - 태그 (예: 'user:login', 'user:register', 'document:create')
-   * @param event.severity - 심각도 ('low' | 'medium' | 'high'), 기본값: 'low'
-   * @param event.status - 성공/실패 여부, 기본값: true
-   * @param event.error - 에러 메시지 (status: false 시 사용)
-   * @param event.metadata - 추가 메타데이터 (예: { method: 'passkey' })
-   * @param options - 추가 옵션
-   * @param options.requireAuth - 미인증 시 로그인 모달 표시 여부, 기본값: false
+   * @param event - Event information to track
+   * @param event.tag - Tag (e.g., 'user:login', 'user:register', 'document:create')
+   * @param event.severity - Severity level ('low' | 'medium' | 'high'), default: 'low'
+   * @param event.status - Success/failure flag, default: true
+   * @param event.error - Error message (used when status: false)
+   * @param event.metadata - Additional metadata (e.g., { method: 'passkey' })
+   * @param options - Additional options
+   * @param options.requireAuth - Whether to show login modal when unauthenticated, default: false
    */
   trackUserAction: (
     event: {
-      /** 태그 (필수) */
+      /** Tag (required) */
       tag: string;
-      /** 심각도 (선택, 기본값: 'low') */
+      /** Severity level (optional, default: 'low') */
       severity?: 'low' | 'medium' | 'high';
-      /** 성공/실패 여부 (선택, 기본값: true) */
+      /** Success/failure flag (optional, default: true) */
       status?: boolean;
-      /** 에러 메시지 (선택, status: false 시 사용) */
+      /** Error message (optional, used when status: false) */
       error?: string;
-      /** 추가 메타데이터 (선택) */
+      /** Additional metadata (optional) */
       metadata?: Record<string, unknown>;
-      /** 페이지 URL (선택, 미전달 시 window.location.href 자동 수집) */
+      /** Page URL (optional, defaults to window.location.href if not provided) */
       page?: string;
     },
     options?: {
       /** If true, opens login modal when user not authenticated. Default: false */
       requireAuth?: boolean;
-      /** Slack 웹훅 알림 발송 여부. true 시 severity와 무관하게 Slack 알림 발송. Default: false */
+      /** Whether to send Slack webhook notifications regardless of severity level. Default: false */
       webhookNotification?: boolean;
     },
   ) => Promise<void>;
   /**
-   * PWA 설치 여부 확인
-   * Host 앱에서 설치 버튼 표시/숨김 제어에 사용
-   * @returns 설치됐으면 true
+   * Check whether the PWA is installed.
+   * Used by the host app to show/hide the install button.
+   * @returns true if installed
    */
   isPwaInstalled: () => boolean;
 }
@@ -217,7 +217,7 @@ export interface TokenAPI {
   /**
    * Logs out the user.
    * Deletes memory token and calls SessionManager.clear().
-   * @param options.webhookNotification - Slack 웹훅 알림 발송 여부 (default: false)
+   * @param options.webhookNotification - Whether to send Slack webhook notifications (default: false)
    */
   signOut(options?: { webhookNotification?: boolean }): Promise<void>;
 }
@@ -289,7 +289,7 @@ export interface IdpOpenParams {
   action: 'create' | 'read' | 'update' | 'delete';
   /** Force step-up authentication regardless of permission level (default: false) */
   forceStepUp?: boolean;
-  /** Slack 웹훅 알림 발송 여부. true 시 step-up 스킵/성공/실패 모두 Slack 알림 발송. Default: false */
+  /** Whether to send Slack webhook notifications for step-up skip/success/failure. Default: false */
   webhookNotification?: boolean;
 }
 
