@@ -2,7 +2,7 @@
 // Pure browser environment with no SSR, so no additional guards needed.
 import { ref, onUnmounted } from 'vue';
 import * as Transcodes from '@bigstrider/transcodes-sdk';
-import type { User } from '@bigstrider/transcodes-sdk';
+import type { Member } from '@bigstrider/transcodes-sdk';
 
 /**
  * Vue 3 composable that encapsulates Transcodes SDK state and actions.
@@ -11,7 +11,7 @@ import type { User } from '@bigstrider/transcodes-sdk';
  */
 export function useTranscodes() {
   const status = ref<'idle' | 'initializing' | 'ready' | 'error'>('idle');
-  const user = ref<User | null>(null);
+  const user = ref<Member | null>(null);
   const isAuthenticated = ref(false);
   const errorMsg = ref('');
   const eventLog = ref<string[]>([]);
@@ -30,13 +30,13 @@ export function useTranscodes() {
     try {
       await Transcodes.init(projectId);
       isAuthenticated.value = await Transcodes.isAuthenticated();
-      user.value = isAuthenticated.value ? await Transcodes.getCurrentUser() : null;
+      user.value = isAuthenticated.value ? await Transcodes.getCurrentMember() : null;
       status.value = 'ready';
 
       // Subscribe to events after init completes
       unsubscribe = Transcodes.on('AUTH_STATE_CHANGED', (payload) => {
         isAuthenticated.value = payload.isAuthenticated;
-        user.value = payload.user;
+        user.value = payload.member;
         eventLog.value = [
           `[${new Date().toLocaleTimeString()}] AUTH_STATE_CHANGED → ${payload.isAuthenticated}`,
           ...eventLog.value.slice(0, 9),
@@ -52,7 +52,7 @@ export function useTranscodes() {
     const result = await Transcodes.openAuthLoginModal({ webhookNotification: false });
     if (result.success && result.payload?.[0]) {
       isAuthenticated.value = true;
-      user.value = result.payload[0].user;
+      user.value = result.payload[0].member;
     }
   }
 
