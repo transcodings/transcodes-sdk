@@ -68,12 +68,17 @@ export interface TranscodesDynamicAPI extends TranscodesBaseAPI {
   /**
    * Update SDK configuration at runtime
    */
-  setConfig: (options: { customUserId?: string }) => void;
+  setConfig: (options: { memberId?: string }) => void;
 
   /**
    * Check if SDK is initialized
    */
   isInitialized: () => boolean;
+
+  /**
+   * Get build metadata (version tracking, debugging)
+   */
+  getBuildInfo: () => TranscodesBuildInfo;
 }
 
 
@@ -83,7 +88,7 @@ export interface TranscodesDynamicAPI extends TranscodesBaseAPI {
 export interface TranscodesBaseAPI {
   // Public Token API
   token: TokenAPI;
-  user: PublicUserAPI;
+  member: PublicMemberAPI;
 
   // Event API
   on: PublicEventAPI['on'];
@@ -92,7 +97,7 @@ export interface TranscodesBaseAPI {
   // Modal methods (public API)
   openAuthLoginModal: (params: {
     projectId?: string;
-    /** Whether to send Slack webhook notifications. When true, sends Slack alerts on login success/failure. Default: false */
+    /** Whether to send Slack webhook notifications on login success/failure. Default: false */
     webhookNotification?: boolean;
   }) => Promise<ApiResponse<AuthResult[]>>;
   openAuthConsoleModal: (params?: {
@@ -138,13 +143,13 @@ export interface TranscodesBaseAPI {
     options?: {
       /** If true, opens login modal when user not authenticated. Default: false */
       requireAuth?: boolean;
-      /** Whether to send Slack webhook notifications. When true, sends Slack alerts regardless of severity level. Default: false */
+      /** Whether to send Slack webhook notifications regardless of severity level. Default: false */
       webhookNotification?: boolean;
     },
   ) => Promise<void>;
   /**
-   * Check whether the PWA is installed
-   * Used by the host app to show/hide the install button
+   * Check whether the PWA is installed.
+   * Used by the host app to show/hide the install button.
    * @returns true if installed
    */
   isPwaInstalled: () => boolean;
@@ -158,11 +163,6 @@ export interface TranscodesInitOptions {
   /** Project ID from Transcodes dashboard */
   projectId: string;
   /**
-   * Backend URL for local development. When set, loads webworker.js from this server instead of the CDN.
-   * e.g., 'http://localhost:3500'
-   */
-  baseUrl?: string;
-  /**
    * @deprecated Server derives rpId from project domain_url. This field is no longer required.
    * Relying Party ID - the domain where the SDK is running (e.g., 'example.com')
    */
@@ -172,9 +172,18 @@ export interface TranscodesInitOptions {
    * (e.g., Firebase UID, Auth0 user_id)
    * @optional
    */
-  customUserId?: string;
+  memberId?: string;
   /** Enable debug logging */
   debug?: boolean;
+}
+
+
+/**
+ * Build info exposed by Dynamic SDK (for version/debug tracking)
+ */
+export interface TranscodesBuildInfo {
+  /** ISO timestamp when the SDK bundle was built */
+  buildTimestamp: string;
 }
 
 
@@ -184,7 +193,7 @@ export interface TokenAPI {
    * Extracts user information from JWT and returns immediately without API calls.
    * Returns null if not authenticated.
    */
-  getCurrentUser(): Promise<User | null>;
+  getCurrentMember(): Promise<Member | null>;
 
   /**
    * Returns a valid Access Token.
@@ -215,16 +224,16 @@ export interface TokenAPI {
 
 
 /**
- * Public User API (exposed on window.transcodes.user)
- * Safe methods for user operations
+ * Public Member API (exposed on window.transcodes.member)
+ * Safe methods for member operations
  */
-export interface PublicUserAPI {
+export interface PublicMemberAPI {
   get(params: {
     projectId?: string;
-    userId?: string;
+    memberId?: string;
     email?: string;
     fields?: string;
-  }): Promise<ApiResponse<User[]>>;
+  }): Promise<ApiResponse<Member[]>>;
 }
 
 
@@ -256,11 +265,11 @@ export interface ApiResponse<T> {
 
 
 /**
- * Authentication result with token and user
+ * Authentication result with token and member
  */
 export interface AuthResult {
   token: string;
-  user: User;
+  member: Member;
 }
 
 
@@ -280,7 +289,7 @@ export interface IdpOpenParams {
   action: 'create' | 'read' | 'update' | 'delete';
   /** Force step-up authentication regardless of permission level (default: false) */
   forceStepUp?: boolean;
-  /** Whether to send Slack webhook notifications. When true, sends Slack alerts for step-up skip/success/failure. Default: false */
+  /** Whether to send Slack webhook notifications for step-up skip/success/failure. Default: false */
   webhookNotification?: boolean;
 }
 
@@ -303,17 +312,17 @@ export interface IdpAuthResponse {
 
 
 /**
- * User information
+ * Member profile data
  */
-export interface User {
-  id: string;
-  email: string;
+export interface Member {
+  id?: string;
+  projectId?: string;
   name?: string;
+  email?: string;
   role?: string;
-  projectId: string;
-  metadata?: {
-    [key: string]: string | number | boolean | null | undefined;
-  };
+  metadata?: Record<string, string | number | boolean | null | undefined>;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 }
 
 
@@ -348,7 +357,7 @@ export interface AuthStateChangedPayload {
   isAuthenticated: boolean;
   accessToken: string | null;
   expiresAt: number | null;
-  user: User | null;
+  member: Member | null;
 }
 
 

@@ -2,7 +2,7 @@
 // Pure browser environment with no SSR, so no additional guards needed.
 import { useState, useEffect, useCallback, useRef } from 'react';
 import * as Transcodes from '@bigstrider/transcodes-sdk';
-import type { User } from '@bigstrider/transcodes-sdk';
+import type { Member } from '@bigstrider/transcodes-sdk';
 
 type SdkStatus = 'idle' | 'initializing' | 'ready' | 'error';
 
@@ -13,7 +13,7 @@ type SdkStatus = 'idle' | 'initializing' | 'ready' | 'error';
  */
 export function useTranscodes() {
   const [status, setStatus] = useState<SdkStatus>('idle');
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<Member | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [eventLog, setEventLog] = useState<string[]>([]);
   const [errorMsg, setErrorMsg] = useState('');
@@ -25,7 +25,7 @@ export function useTranscodes() {
     // Subscribe to events only after init() completes
     unsubscribeRef.current = Transcodes.on('AUTH_STATE_CHANGED', (payload) => {
       setIsAuthenticated(payload.isAuthenticated);
-      setUser(payload.user);
+      setUser(payload.member);
       setEventLog((prev) => [
         `[${new Date().toLocaleTimeString()}] AUTH_STATE_CHANGED → ${payload.isAuthenticated}`,
         ...prev.slice(0, 9),
@@ -44,7 +44,7 @@ export function useTranscodes() {
       await Transcodes.init(projectId);
       const authed = await Transcodes.isAuthenticated();
       setIsAuthenticated(authed);
-      setUser(authed ? await Transcodes.getCurrentUser() : null);
+      setUser(authed ? await Transcodes.getCurrentMember() : null);
       setStatus('ready');
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : 'Initialization failed');
@@ -56,7 +56,7 @@ export function useTranscodes() {
     const result = await Transcodes.openAuthLoginModal({ webhookNotification: false });
     if (result.success && result.payload?.[0]) {
       setIsAuthenticated(true);
-      setUser(result.payload[0].user);
+      setUser(result.payload[0].member);
     }
   }, []);
 

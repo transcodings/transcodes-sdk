@@ -7,7 +7,7 @@ import type {
   AuthResult,
   IdpOpenParams,
   IdpAuthResponse,
-  User,
+  Member,
 } from './types';
 import { CDN_BASE } from './constants';
 
@@ -145,9 +145,10 @@ export function isInitialized(): boolean {
 export const getAccessToken = async (): Promise<string | null> =>
   (await clientAsync()).token.getAccessToken();
 
-/** Gets the currently authenticated user, or `null` if no user is signed in. */
-export const getCurrentUser = async (): Promise<User | null> =>
-  (await clientAsync()).token.getCurrentUser();
+
+/** Gets the currently authenticated member, or `null` if no member is signed in. */
+export const getCurrentMember = async (): Promise<Member | null> =>
+  (await clientAsync()).token.getCurrentMember();
 
 /**
  * Synchronously checks if a token exists.
@@ -165,15 +166,16 @@ export const signOut = async (options?: {
   webhookNotification?: boolean;
 }): Promise<void> => (await clientAsync()).token.signOut(options);
 
-// ─── User API ────────────────────────────────────────────────────────────────
+// ─── Member API ──────────────────────────────────────────────────────────────
 
-/** Fetches user(s) matching the given query parameters. */
-export const getUser = async (params: {
+/** Fetches member(s) matching the given query parameters. */
+export const getMember = async (params: {
   projectId?: string;
-  userId?: string;
+  memberId?: string;
   email?: string;
   fields?: string;
-}): Promise<ApiResponse<User[]>> => (await clientAsync()).user.get(params);
+}): Promise<ApiResponse<Member[]>> =>
+  (await clientAsync()).member.get(params);
 
 // ─── Modal API ───────────────────────────────────────────────────────────────
 

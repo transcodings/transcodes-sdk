@@ -2,14 +2,14 @@
   // browser: checks SSR environment. true guarantees browser execution.
   import { browser } from '$app/environment';
   import { onDestroy } from 'svelte';
-  import type { User } from '@bigstrider/transcodes-sdk';
+  import type { Member } from '@bigstrider/transcodes-sdk';
 
   type SdkStatus = 'idle' | 'initializing' | 'ready' | 'error';
 
   // Svelte 5 runes mode
   let projectId = $state('');
   let status = $state<SdkStatus>('idle');
-  let user = $state<User | null>(null);
+  let user = $state<Member | null>(null);
   let isAuthenticated = $state(false);
   let errorMsg = $state('');
   let eventLog = $state<string[]>([]);
@@ -40,13 +40,13 @@
       sdk = await import('@bigstrider/transcodes-sdk');
       await sdk.init(projectId.trim());
       isAuthenticated = await sdk.isAuthenticated();
-      user = isAuthenticated ? await sdk.getCurrentUser() : null;
+      user = isAuthenticated ? await sdk.getCurrentMember() : null;
       status = 'ready';
 
       // Subscribe to events after init completes
       unsubscribe = sdk.on('AUTH_STATE_CHANGED', (payload) => {
         isAuthenticated = payload.isAuthenticated;
-        user = payload.user;
+        user = payload.member;
         eventLog = [
           `[${new Date().toLocaleTimeString()}] AUTH_STATE_CHANGED → ${payload.isAuthenticated}`,
           ...eventLog.slice(0, 9),
@@ -63,7 +63,7 @@
     const result = await sdk.openAuthLoginModal({ webhookNotification: false });
     if (result.success && result.payload?.[0]) {
       isAuthenticated = true;
-      user = result.payload[0].user;
+      user = result.payload[0].member;
     }
   }
 

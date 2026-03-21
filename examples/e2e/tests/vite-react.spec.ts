@@ -85,7 +85,7 @@ test.describe('Vite + React 19 — SDK integration', () => {
     expect(isInit).toBe(true);
   });
 
-  test('Unauthenticated state — verify isAuthenticated/hasToken/getCurrentUser', async ({ page }) => {
+  test('Unauthenticated state — verify isAuthenticated/hasToken/getCurrentMember', async ({ page }) => {
     await page.getByPlaceholder('Project ID').fill(PROJECT_ID);
     await page.getByRole('button', { name: 'Init SDK' }).click();
     await expect(page.getByText('ready')).toBeVisible({ timeout: 30000 });
@@ -97,12 +97,12 @@ test.describe('Vite + React 19 — SDK integration', () => {
       return {
         isAuthenticated: await sdk.token.isAuthenticated(),
         hasToken: sdk.token.hasToken(),
-        currentUser: await sdk.token.getCurrentUser(),
+        currentMember: await sdk.token.getCurrentMember(),
       };
     });
     expect(authState.isAuthenticated).toBe(false);
     expect(authState.hasToken).toBe(false);
-    expect(authState.currentUser).toBeNull();
+    expect(authState.currentMember).toBeNull();
   });
 
   test('Re-initialization with valid projectId after initialization failure', async ({ page }) => {
