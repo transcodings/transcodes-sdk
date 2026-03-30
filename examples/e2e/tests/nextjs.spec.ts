@@ -10,7 +10,7 @@ test.describe('Next.js 15 (App Router) — SDK integration', () => {
   });
 
   test('Initial UI rendering', async ({ page }) => {
-    await expect(page.getByText('Transcodes SDK — Next.js 15 (App Router)')).toBeVisible();
+    await expect(page.getByText('Admin · Transcodes SDK — Next.js 15')).toBeVisible();
     await expect(page.getByPlaceholder('Project ID')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Init SDK' })).toBeVisible();
     await expect(page.getByText('idle')).toBeVisible();

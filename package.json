@@ -5,13 +5,11 @@
   "type": "module",
   "main": "lib/index.cjs",
   "exports": {
-    "import": {
-      "default": "./lib/index.esm.js",
-      "types": "./lib/types/index.d.ts"
-    },
-    "require": {
-      "default": "./lib/index.cjs",
-      "types": "./lib/types/index.d.ts"
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "import": "./lib/index.esm.js",
+      "require": "./lib/index.cjs",
+      "default": "./lib/index.cjs"
     }
   },
   "files": [
