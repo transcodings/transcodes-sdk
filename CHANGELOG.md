@@ -1,5 +1,12 @@
 # @bigstrider/transcodes-sdk
 
+## 1.1.0
+
+### Minor Changes
+
+- 4c4e4c3: Corrected package.json esm & cjs export
+- 61ce26c: added env variables for dev
+
 ## 1.0.0
 
 ### Major Changes
