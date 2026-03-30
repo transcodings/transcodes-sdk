@@ -25,7 +25,7 @@ src/
 ├── index.ts      # 진입점. 모든 public API 함수를 re-export
 ├── loader.ts     # 핵심 로직: init(), loadScript(), waitForTranscodes() + 각 API 래퍼 함수
 ├── types.ts      # 모든 TypeScript 인터페이스/타입 정의
-└── constants.ts  # CDN_BASE URL 상수
+└── constants.ts  # TRANSCODES_CDN_BASE URL 상수
 ```
 
 - **loader.ts**: `init(projectId)` → CDN에서 `<script type="module">` 주입 → `window.transcodes` 폴링(50ms 간격, 10초 타임아웃) → Dynamic SDK의 `init()` 호출. 나머지 함수들(`getAccessToken`, `openAuthLoginModal` 등)은 모두 `client()` 헬퍼를 통해 `window.transcodes`에 위임하는 thin wrapper.
