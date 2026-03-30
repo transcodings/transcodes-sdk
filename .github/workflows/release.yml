@@ -12,6 +12,9 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    env:
+      TRANSCODES_CDN_BASE: ${{ secrets.TRANSCODES_CDN_BASE }}
+
     steps:
       - name: checkout repository code
         uses: actions/checkout@v2

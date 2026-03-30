@@ -145,7 +145,6 @@ export function isInitialized(): boolean {
 export const getAccessToken = async (): Promise<string | null> =>
   (await clientAsync()).token.getAccessToken();
 
-
 /** Gets the currently authenticated member, or `null` if no member is signed in. */
 export const getCurrentMember = async (): Promise<Member | null> =>
   (await clientAsync()).token.getCurrentMember();
@@ -174,8 +173,7 @@ export const getMember = async (params: {
   memberId?: string;
   email?: string;
   fields?: string;
-}): Promise<ApiResponse<Member[]>> =>
-  (await clientAsync()).member.get(params);
+}): Promise<ApiResponse<Member[]>> => (await clientAsync()).member.get(params);
 
 // ─── Modal API ───────────────────────────────────────────────────────────────
 
